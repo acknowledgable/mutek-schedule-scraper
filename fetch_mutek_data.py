@@ -10,6 +10,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 import json
 import re
+import sys
 from datetime import datetime
 
 HEADERS = {
@@ -18,7 +19,6 @@ HEADERS = {
 
 def scrape_program_links(program_url):
     """Scrapes event page links from the central schedule page."""
-    print(f"Scraping schedule for event links...")
     try:
         req = urllib.request.Request(program_url, headers=HEADERS)
         with urllib.request.urlopen(req) as response:
@@ -43,7 +43,7 @@ def scrape_program_links(program_url):
         
         return links
     except Exception as e:
-        print(f"Error fetching program links: {e}")
+        print(f"Error fetching program links: {e}", file=sys.stderr)
         return []
 
 def convert_to_24h(time_str):
@@ -67,76 +67,55 @@ def _extract_artists_from_container(container):
     
     if not slides:
         return artists_data
-        
+
     for slide in slides:
+        # Extract Artist Name
+        artist_element = slide.find(class_='artists-single__title')
         artist_name = "Unknown Artist"
-        start_time = "Unknown"
-        end_time = "Unknown"
+        if artist_element:
+            # Strip out <sup> tags first
+            for sup in artist_element.find_all('sup'):
+                sup.decompose()
+            span = artist_element.find('span')
+            artist_name = span.get_text(strip=True) if span else artist_element.get_text(strip=True)
+
+        # Extract Program Track, Date, and Time
         program_track = "Unknown"
         date = "Unknown"
+        start_time = "Unknown"
+        end_time = "Unknown"
         
-        # 1. Extract Artist Name
-        artist_heading = slide.find(['h4', 'h5'], class_=lambda c: c and 'artists-single__title' in c)
-        if not artist_heading:
-            artist_heading = slide.find(['h4', 'h5', 'strong'])
-            
-        if not artist_heading:
-            # Try finding an anchor tag if headings fail
-            artist_heading = slide.find('a', href=lambda href: href and '/en/artists/' in href)
-
-        if artist_heading:
-            name_span = artist_heading.find('span')
-            if name_span:
-                artist_name = name_span.get_text(strip=True)
-            else:
-                for sup in artist_heading.find_all('sup'):
-                    sup.decompose()
-                artist_name = artist_heading.get_text(strip=True)
-
-        # 2. Extract Track, Date, and Time from wysiwyg columns
-        wysiwyg_container = slide.find('div', class_=lambda c: c and 'artists-single__wysiwyg' in c)
-        if wysiwyg_container:
-            cols = wysiwyg_container.find_all('div', class_='artists-single__wysiwyg-col')
-            
-            # Usually 3 columns: [Track, Date, Time]. Check if they exist.
+        wysiwyg = slide.find(class_='artists-single__wysiwyg')
+        if wysiwyg:
+            cols = wysiwyg.find_all(class_='artists-single__wysiwyg-col')
             if len(cols) >= 1:
-                p = cols[0].find('p')
-                if p: program_track = p.get_text(strip=True)
-            
+                program_track = cols[0].get_text(strip=True)
             if len(cols) >= 2:
-                p = cols[1].find('p')
-                if p: date = p.get_text(strip=True)
-                
-        # 3. Extract time by scanning all p tags for "Performs at"
-        time_p = None
-        for p_tag in slide.find_all('p'):
-            if p_tag.get_text() and 'Performs at' in p_tag.get_text():
-                time_p = p_tag
-                break
+                date = cols[1].get_text(strip=True)
+            if len(cols) >= 3:
+                for p_tag in cols[2].find_all('p'):
+                    text = p_tag.get_text(separator=" ", strip=True)
+                    if 'Performs at' in text:
+                        # Find 12h times using regex
+                        matches = re.findall(r'(\d{1,2}:\d{2}\s*[ap]m|\d{1,2}\s*[ap]m)', text, re.IGNORECASE)
+                        if len(matches) >= 1:
+                            start_time = convert_to_24h(matches[0])
+                        if len(matches) >= 2:
+                            end_time = convert_to_24h(matches[1])
+                        break
         
-        if time_p:
-            full_time_text = time_p.get_text(strip=True)
-            time_pattern = r'(\d{1,2}(?::\d{2})?\s*(?:am|pm))'
-            matches = re.findall(time_pattern, full_time_text, flags=re.IGNORECASE)
-            
-            if len(matches) >= 1:
-                start_time = convert_to_24h(matches[0])
-            if len(matches) >= 2:
-                end_time = convert_to_24h(matches[1])
-                
         artists_data.append({
-            'artist': artist_name,
-            'track': program_track,
-            'date': date,
-            'start_time': start_time,
-            'end_time': end_time
+            "artist": artist_name,
+            "program_track": program_track,
+            "date": date,
+            "start_time": start_time,
+            "end_time": end_time
         })
         
     return artists_data
 
 def scrape_event_details(url):
     """Scrapes a specific event page for venues, artists, times, track, and date."""
-    print(f"Scraping event details from: {url}")
     try:
         req = urllib.request.Request(url, headers=HEADERS)
         with urllib.request.urlopen(req) as response:
@@ -171,10 +150,10 @@ def scrape_event_details(url):
         }
 
     except urllib.error.URLError as e:
-        print(f"Error fetching the URL {url}: {e.reason}")
+        print(f"Error fetching the URL {url}: {e.reason}", file=sys.stderr)
         return None
     except Exception as e:
-        print(f"An unexpected error occurred parsing {url}: {e}")
+        print(f"An unexpected error occurred parsing {url}: {e}", file=sys.stderr)
         return None
 
 if __name__ == '__main__':
@@ -182,24 +161,13 @@ if __name__ == '__main__':
     program_url = "https://montreal.mutek.org/en/schedule/program?_gl=1*yqfcs7*_up*MQ..&gclid=CjwKCAjwpqHTBhAcEiwAj2Aful13LWxyHsdkRPvpqJvZCNNNjIn4RvVos3E_dzwZOW76qsud4LT6GhoCV48QAvD_BwE&gbraid=0AAAAADOgMODZz1eGZxaShegp9wPUlb_EZ#weekly-view"
     
     event_links = scrape_program_links(program_url)
-    print(f"\nFound {len(event_links)} event links on the schedule page.")
-    
-    # Optional: limit the links for testing to avoid hitting the server too hard initially
-    # event_links = event_links[:3] 
     
     all_festival_data = []
-    
-    print("\n" + "="*50 + "\n")
     
     # 2. Iterate through each discovered link and extract the details
     for link in event_links:
         event_data = scrape_event_details(link)
         if event_data and event_data.get('structured_schedule'):
             all_festival_data.append(event_data)
-            print(f" -> Successfully parsed data for {link}")
-        else:
-            print(f" -> No schedule data found for {link}")
             
-    print("\n" + "="*50 + "\n")
-    print("FINAL CONSOLIDATED DATA:")
     print(json.dumps(all_festival_data, indent=4, ensure_ascii=False))
