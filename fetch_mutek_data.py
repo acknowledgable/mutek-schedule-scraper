@@ -64,10 +64,11 @@ def convert_to_24h(time_str):
 def _extract_artists_from_container(container):
     """Helper to extract artist details from a swiper container."""
     artists_data = []
+    overall_program_track = "Unknown"
     slides = container.find_all(class_=lambda c: c and 'swiper-slide' in c)
     
     if not slides:
-        return artists_data
+        return {"program_track": overall_program_track, "artists": artists_data}
 
     for slide in slides:
         # Extract Artist Name
@@ -81,16 +82,26 @@ def _extract_artists_from_container(container):
             artist_name = span.get_text(strip=True) if span else artist_element.get_text(strip=True)
 
         # Extract Program Track, Date, and Time
-        program_track = "Unknown"
         date = "Unknown"
         start_time = "Unknown"
         end_time = "Unknown"
         
+        # Extract Artist Profile URL
+        profile_url = "Unknown"
+        href = slide.get('href')
+        if href:
+            if href.startswith('/'):
+                 profile_url = f"https://montreal.mutek.org{href}"
+            else:
+                 profile_url = href
+
         wysiwyg = slide.find(class_='artists-single__wysiwyg')
         if wysiwyg:
             cols = wysiwyg.find_all(class_='artists-single__wysiwyg-col')
             if len(cols) >= 1:
                 program_track = cols[0].get_text(strip=True)
+                if overall_program_track == "Unknown" and program_track:
+                    overall_program_track = program_track
             if len(cols) >= 2:
                 date = cols[1].get_text(strip=True)
             if len(cols) >= 3:
@@ -107,13 +118,16 @@ def _extract_artists_from_container(container):
         
         artists_data.append({
             "artist": artist_name,
-            "program_track": program_track,
+            "profile_url": profile_url,
             "date": date,
             "start_time": start_time,
             "end_time": end_time
         })
         
-    return artists_data
+    return {
+        "program_track": overall_program_track,
+        "artists": artists_data
+    }
 
 def scrape_event_details(url):
     """Scrapes a specific event page for venues, artists, times, track, and date."""
