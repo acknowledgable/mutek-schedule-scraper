@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUTEK 2026 Festival Schedule</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mutek: {
+                            black: '#0D0D11',
+                            dark: '#14141A',
+                            card: '#1A1A24',
+                            accent: '#3B82F6',
+                            purple: '#A855F7',
+                            pink: '#EC4899',
+                            cyan: '#06B6D4',
+                            emerald: '#10B981',
+                            amber: '#F59E0B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for smooth visual experience */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #14141A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A2A38;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+
+        .sticky-column-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        .sticky-time-axis {
+            position: sticky;
+            left: 0;
+            z-index: 40;
+        }
+
+        .sticky-corner {
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        .performance-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .performance-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            z-index: 25 !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Subtle grid background pattern */
+        .time-grid-bg {
+            background-size: 100% 60px;
+            background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-[#0D0D11] text-gray-100 font-sans antialiased min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="bg-[#14141A]/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <i data-lucide="music-4" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+                    MUTEK 2026
+                </h1>
+                <p class="text-xs text-gray-400 flex items-center gap-1">
+                    <span>Interactive Schedule & Timelines</span>
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span class="text-emerald-400 text-[10px] font-mono">18 SHOWS</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar Controls -->
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <!-- Search Bar -->
+            <div class="relative flex-1 md:w-64">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Search artist, track..." 
+                    class="w-full bg-[#1A1A24] text-sm text-gray-200 pl-9 pr-8 py-1.5 rounded-lg border border-gray-700/60 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-500">
+                <button id="clearSearch" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+
+            <!-- Date Filter Pills -->
+            <div id="dateFilters" class="flex items-center gap-1 bg-[#1A1A24] p-1 rounded-lg border border-gray-800 text-xs overflow-x-auto max-w-full">
+                <!-- Dynamically Inserted -->
+            </div>
+
+            <!-- Zoom Controls -->
+            <div class="hidden sm:flex items-center gap-1 bg-[#1A1A24] p-1 rounded-lg border border-gray-800 text-xs">
+                <button id="zoomOutBtn" class="p-1 hover:bg-gray-700/50 rounded text-gray-300" title="Decrease Hour Scale">
+                    <i data-lucide="zoom-out" class="w-4 h-4"></i>
+                </button>
+                <span id="zoomLevelText" class="px-1 text-[11px] font-mono text-gray-400">100%</span>
+                <button id="zoomInBtn" class="p-1 hover:bg-gray-700/50 rounded text-gray-300" title="Increase Hour Scale">
+                    <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Track/Series Legend & Quick Stats -->
+    <section class="bg-[#14141A] border-b border-gray-800/80 px-4 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2 overflow-x-auto py-0.5" id="trackLegend">
+            <span class="text-gray-400 font-medium uppercase tracking-wider text-[10px] mr-1">Tracks:</span>
+            <!-- Legend Items generated dynamically -->
+        </div>
+        <div class="flex items-center gap-4 text-gray-400 text-xs">
+            <div class="flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-400"></i>
+                <span>Aug 25 - Aug 30, 2026</span>
+            </div>
+            <div class="hidden md:flex items-center gap-1.5">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-purple-400"></i>
+                <span>3 Key Venues</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Interactive Grid Container -->
+    <main class="flex-1 relative overflow-auto bg-[#0D0D11] min-h-[500px]" id="gridViewport">
+        <div id="scheduleGrid" class="relative inline-block min-w-full select-none">
+            <!-- Dynamic Grid Rendered Here -->
+        </div>
+    </main>
+
+    <!-- Modal for Artist Details -->
+    <div id="artistModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#1A1A24] border border-gray-700/80 rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all scale-95 opacity-0 duration-200" id="artistModalContent">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span id="modalTrackBadge" class="inline-block px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 mb-2">
+                        TRACK
+                    </span>
+                    <h3 id="modalArtistName" class="text-2xl font-bold text-white tracking-tight">Artist Name</h3>
+                </div>
+                <button id="closeModal" class="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 border-t border-b border-gray-800 py-4 my-4 text-sm">
+                <div class="flex items-center text-gray-300">
+                    <i data-lucide="calendar-days" class="w-4 h-4 mr-3 text-blue-400"></i>
+                    <span class="text-gray-400 w-16">Date:</span>
+                    <span id="modalDate" class="font-medium text-white">25 Aug 2026</span>
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i data-lucide="clock" class="w-4 h-4 mr-3 text-emerald-400"></i>
+                    <span class="text-gray-400 w-16">Time:</span>
+                    <span id="modalTime" class="font-medium text-white">18:30 - 19:05</span>
+                </div>
+                <div class="flex items-center text-gray-300">
+                    <i data-lucide="map-pin" class="w-4 h-4 mr-3 text-purple-400"></i>
+                    <span class="text-gray-400 w-16">Venue:</span>
+                    <span id="modalVenue" class="font-medium text-white">Main Venue</span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <a id="modalEventLink" href="#" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-600/20">
+                    <span>View Event Page</span>
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                </a>
+                <button id="closeModalBtn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm font-medium transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Stats / Legend Info -->
+    <footer class="bg-[#14141A] border-t border-gray-800 px-4 py-2.5 text-xs text-gray-500 flex flex-wrap justify-between items-center gap-2">
+        <div class="flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>MUTEK Montréal 27th Edition Data Loaded</span>
+        </div>
+        <div>
+            Tip: Click performance blocks for details. Drag or scroll horizontally to explore full festival timeline.
+        </div>
+    </footer>
+
+    <script>
+        // Raw Data extracted directly from the prompt JSON structure
+        const rawFestivalData = [
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-1",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 1",
+                        "artists": [
+                            {
+                                "artist": "Ida Toninato",
+                                "profile_url": "https://montreal.mutek.org/en/artists/ida-toninato",
+                                "date": "25 Aug",
+                                "start_time": "18:30",
+                                "end_time": "19:05"
+                            },
+                            {
+                                "artist": "Pick a Piper",
+                                "profile_url": "https://montreal.mutek.org/en/artists/pick-a-piper",
+                                "date": "25 Aug",
+                                "start_time": "19:15",
+                                "end_time": "20:00"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-2",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 2",
+                        "artists": [
+                            {
+                                "artist": "16:9 ratio",
+                                "profile_url": "https://montreal.mutek.org/en/artists/169-ratio",
+                                "date": "26 Aug",
+                                "start_time": "17:00",
+                                "end_time": "18:00"
+                            },
+                            {
+                                "artist": "dustbunny",
+                                "profile_url": "https://montreal.mutek.org/en/artists/dustbunny",
+                                "date": "26 Aug",
+                                "start_time": "18:05",
+                                "end_time": "18:35"
+                            },
+                            {
+                                "artist": "NGL Flounce",
+                                "profile_url": "https://montreal.mutek.org/en/artists/ngl-flounce",
+                                "date": "26 Aug",
+                                "start_time": "18:40",
+                                "end_time": "19:25"
+                            },
+                            {
+                                "artist": "jamvvis",
+                                "profile_url": "https://montreal.mutek.org/en/artists/jamvvis-yfbob",
+                                "date": "26 Aug",
+                                "start_time": "19:35",
+                                "end_time": "20:20"
+                            },
+                            {
+                                "artist": "NVST",
+                                "profile_url": "https://montreal.mutek.org/en/artists/nvst",
+                                "date": "26 Aug",
+                                "start_time": "20:30",
+                                "end_time": "21:20"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-1",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 1",
+                        "artists": [
+                            {
+                                "artist": "Weidi Zhang & Weilu Ge",
+                                "profile_url": "https://montreal.mutek.org/en/artists/weidi-zhang-weilu-ge",
+                                "date": "26 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            },
+                            {
+                                "artist": "mesocosm",
+                                "profile_url": "https://montreal.mutek.org/en/artists/mesocosm",
+                                "date": "26 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            },
+                            {
+                                "artist": "Guillaume Coutu Dumont & Line Katcho",
+                                "profile_url": "https://montreal.mutek.org/en/artists/guillaume-coutu-dumont-line-katcho",
+                                "date": "26 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            },
+                            {
+                                "artist": "France Jobin & Markus Heckmann",
+                                "profile_url": "https://montreal.mutek.org/en/artists/france-jobin",
+                                "date": "26 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            }
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 1",
+                        "artists": [
+                            {
+                                "artist": "Marc-Antoine Barbier",
+                                "profile_url": "https://montreal.mutek.org/en/artists/marc-antoine-barbier",
+                                "date": "26 Aug",
+                                "start_time": "22:30",
+                                "end_time": "23:15"
+                            },
+                            {
+                                "artist": "Debit",
+                                "profile_url": "https://montreal.mutek.org/en/artists/debit",
+                                "date": "26 Aug",
+                                "start_time": "23:20",
+                                "end_time": "00:10"
+                            },
+                            {
+                                "artist": "Matthew Herbert",
+                                "profile_url": "https://montreal.mutek.org/en/artists/matthew-herbert",
+                                "date": "26 Aug",
+                                "start_time": "00:20",
+                                "end_time": "01:20"
+                            },
+                            {
+                                "artist": "Barker",
+                                "profile_url": "https://montreal.mutek.org/en/artists/barker",
+                                "date": "26 Aug",
+                                "start_time": "01:30",
+                                "end_time": "02:30"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-3",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 3",
+                        "artists": [
+                            {
+                                "artist": "Abulzooz",
+                                "profile_url": "https://montreal.mutek.org/en/artists/zaid-bustami",
+                                "date": "27 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            },
+                            {
+                                "artist": "wetdogg",
+                                "profile_url": "https://montreal.mutek.org/en/artists/wetdogg",
+                                "date": "27 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            },
+                            {
+                                "artist": "Monsieurmadam",
+                                "profile_url": "https://montreal.mutek.org/en/artists/monsieurmadam",
+                                "date": "27 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            },
+                            {
+                                "artist": "WAWA",
+                                "profile_url": "https://montreal.mutek.org/en/artists/wawa",
+                                "date": "27 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            },
+                            {
+                                "artist": "Istanbul Ghetto Club",
+                                "profile_url": "https://montreal.mutek.org/en/artists/istanbul-ghetto-club",
+                                "date": "27 Aug",
+                                "start_time": "Unknown",
+                                "end_time": "Unknown"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-1",
+                "structured_schedule": {
+                    "Maison symphonique": {
+                        "program_track": "X/VISIONS 1",
+                        "artists": [
+                            {
+                                "artist": "Kara-Lis Coverdale",
+                                "profile_url": "https://montreal.mutek.org/en/artists/kara-lis-coverdale",
+                                "date": "27 Aug",
+                                "start_time": "19:00",
+                                "end_time": "19:55"
+                            },
+                            {
+                                "artist": "Kali Malone",
+                                "profile_url": "https://montreal.mutek.org/en/artists/kali-malone",
+                                "date": "27 Aug",
+                                "start_time": "20:15",
+                                "end_time": "21:15"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-2",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 2",
+                        "artists": [
+                            {
+                                "artist": "Nelly-Eve Rajotte",
+                                "profile_url": "https://montreal.mutek.org/en/artists/nelly-eve-rajotte",
+                                "date": "27 Aug",
+                                "start_time": "22:30",
+                                "end_time": "23:00"
+                            },
+                            {
+                                "artist": "MOORE + SALAS",
+                                "profile_url": "https://montreal.mutek.org/en/artists/moore-salas",
+                                "date": "27 Aug",
+                                "start_time": "23:20",
+                                "end_time": "00:05"
+                            },
+                            {
+                                "artist": "Arbor and Tzu Ni",
+                                "profile_url": "https://montreal.mutek.org/en/artists/arbor-and-tzu-ni",
+                                "date": "27 Aug",
+                                "start_time": "00:40",
+                                "end_time": "01:10"
+                            },
+                            {
+                                "artist": "Korea Town Acid & Ajeebsir",
+                                "profile_url": "https://montreal.mutek.org/en/artists/korea-town-acid-ajeebsir",
+                                "date": "27 Aug",
+                                "start_time": "01:30",
+                                "end_time": "02:30"
+                            }
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 2",
+                        "artists": [
+                            {
+                                "artist": "Noémi Büchi",
+                                "profile_url": "https://montreal.mutek.org/en/artists/noemi-buchi",
+                                "date": "27 Aug",
+                                "start_time": "22:45",
+                                "end_time": "23:35"
+                            },
+                            {
+                                "artist": "ELECTRONICOS FANTASTICOS!",
+                                "profile_url": "https://montreal.mutek.org/en/artists/electronicos-fantasticos",
+                                "date": "27 Aug",
+                                "start_time": "23:50",
+                                "end_time": "00:50"
+                            },
+                            {
+                                "artist": "Zora Jones",
+                                "profile_url": "https://montreal.mutek.org/en/artists/zora-jones",
+                                "date": "27 Aug",
+                                "start_time": "01:05",
+                                "end_time": "02:05"
+                            },
+                            {
+                                "artist": "Jump Source",
+                                "profile_url": "https://montreal.mutek.org/en/artists/jump-source",
+                                "date": "27 Aug",
+                                "start_time": "02:10",
+                                "end_time": "03:40"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-4",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 4",
+                        "artists": [
+                            {
+                                "artist": "Vivian Li",
+                                "profile_url": "https://montreal.mutek.org/en/artists/vivian-li",
+                                "date": "28 Aug",
+                                "start_time": "17:00",
+                                "end_time": "17:55"
+                            },
+                            {
+                                "artist": "ArtSaves",
+                                "profile_url": "https://montreal.mutek.org/en/artists/artsaves",
+                                "date": "28 Aug",
+                                "start_time": "18:00",
+                                "end_time": "18:40"
+                            },
+                            {
+                                "artist": "aria",
+                                "profile_url": "https://montreal.mutek.org/en/artists/aria",
+                                "date": "28 Aug",
+                                "start_time": "19:40",
+                                "end_time": "21:00"
+                            },
+                            {
+                                "artist": "Matt & Mark Thibideau",
+                                "profile_url": "https://montreal.mutek.org/en/artists/matt-mark-thibideau",
+                                "date": "28 Aug",
+                                "start_time": "21:10",
+                                "end_time": "22:10"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-2",
+                "structured_schedule": {
+                    "Maison symphonique": {
+                        "program_track": "X/VISIONS 2",
+                        "artists": [
+                            {
+                                "artist": "Tristan Perich & James McVinnie",
+                                "profile_url": "https://montreal.mutek.org/en/artists/tristan-perich-james-mcvinnie",
+                                "date": "28 Aug",
+                                "start_time": "19:00",
+                                "end_time": "20:03"
+                            },
+                            {
+                                "artist": "Voices From The Lake",
+                                "profile_url": "https://montreal.mutek.org/en/artists/voices-from-the-lake",
+                                "date": "28 Aug",
+                                "start_time": "20:28",
+                                "end_time": "21:58"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/metropolis-1",
+                "structured_schedule": {
+                    "MTELUS": {
+                        "program_track": "MÉTROPOLIS 1",
+                        "artists": [
+                            {
+                                "artist": "Cleo Leigh",
+                                "profile_url": "https://montreal.mutek.org/en/artists/cleo-leigh",
+                                "date": "28 Aug",
+                                "start_time": "23:00",
+                                "end_time": "00:00"
+                            },
+                            {
+                                "artist": "Polygonia",
+                                "profile_url": "https://montreal.mutek.org/en/artists/polygonia",
+                                "date": "28 Aug",
+                                "start_time": "00:05",
+                                "end_time": "01:05"
+                            },
+                            {
+                                "artist": "JakoJako",
+                                "profile_url": "https://montreal.mutek.org/en/artists/jakojako",
+                                "date": "28 Aug",
+                                "start_time": "01:10",
+                                "end_time": "02:10"
+                            },
+                            {
+                                "artist": "Jeff Mills",
+                                "profile_url": "https://montreal.mutek.org/en/artists/jeff-mills",
+                                "date": "28 Aug",
+                                "start_time": "02:15",
+                                "end_time": "04:35"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-3",
+                "structured_schedule": {
+                    "Satoshpère": {
+                        "program_track": "NOCTURNE 3",
+                        "artists": [
+                            {
+                                "artist": "Florence-Delphine Roux",
+                                "profile_url": "https://montreal.mutek.org/en/artists/florence-delphine-roux",
+                                "date": "28 Aug",
+                                "start_time": "22:30",
+                                "end_time": "23:00"
+                            },
+                            {
+                                "artist": "Hermanos Riffo Gómez",
+                                "profile_url": "https://montreal.mutek.org/en/artists/hermanos-riffo-gomez",
+                                "date": "28 Aug",
+                                "start_time": "23:15",
+                                "end_time": "00:00"
+                            },
+                            {
+                                "artist": "Elsewhere in India ft. Murthovic & Thiruda",
+                                "profile_url": "https://montreal.mutek.org/en/artists/elsewhere-in-india-ft-murthovic-thiruda",
+                                "date": "28 Aug",
+                                "start_time": "00:15",
+                                "end_time": "01:00"
+                            },
+                            {
+                                "artist": "Cheng Daoyuan & Huang Wei",
+                                "profile_url": "https://montreal.mutek.org/en/artists/cheng-daoyuan-huang-wei",
+                                "date": "28 Aug",
+                                "start_time": "01:15",
+                                "end_time": "01:40"
+                            }
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 3",
+                        "artists": [
+                            {
+                                "artist": "Sara Persico & Mika Oki",
+                                "profile_url": "https://montreal.mutek.org/en/artists/sara-persico-mika-oki",
+                                "date": "28 Aug",
+                                "start_time": "22:45",
+                                "end_time": "23:30"
+                            },
+                            {
+                                "artist": "Honeydrip",
+                                "profile_url": "https://montreal.mutek.org/en/artists/honeydrip",
+                                "date": "28 Aug",
+                                "start_time": "23:40",
+                                "end_time": "00:25"
+                            },
+                            {
+                                "artist": "Mia Koden",
+                                "profile_url": "https://montreal.mutek.org/en/artists/mia-koden",
+                                "date": "28 Aug",
+                                "start_time": "00:30",
+                                "end_time": "01:30"
+                            },
+                            {
+                                "artist": "gyrofield",
+                                "profile_url": "https://montreal.mutek.org/en/artists/gyrofield",
+                                "date": "28 Aug",
+                                "start_time": "01:35",
+                                "end_time": "02:35"
+                            },
+                            {
+                                "artist": "A Guy Called Gerald",
+                                "profile_url": "https://montreal.mutek.org/en/artists/a-guy-called-gerald",
+                                "date": "28 Aug",
+                                "start_time": "02:40",
+                                "end_time": "03:40"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/play-1",
+                "structured_schedule": {
+                    "Studio-Théâtre des Grands Ballets": {
+                        "program_track": "PLAY 1",
+                        "artists": [
+                            {
+                                "artist": "Estelle Schorpp & charline dally",
+                                "profile_url": "https://montreal.mutek.org/en/artists/estelle-schorpp-charline-dally",
+                                "date": "29 Aug",
+                                "start_time": "15:00",
+                                "end_time": "15:30"
+                            },
+                            {
+                                "artist": "pliq",
+                                "profile_url": "https://montreal.mutek.org/en/artists/pliq",
+                                "date": "29 Aug",
+                                "start_time": "15:40",
+                                "end_time": "16:20"
+                            },
+                            {
+                                "artist": "JS Baillat & Mateo Murphy",
+                                "profile_url": "https://montreal.mutek.org/en/artists/js-baillat-mateo-murphy",
+                                "date": "29 Aug",
+                                "start_time": "16:30",
+                                "end_time": "17:10"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-5",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 5",
+                        "artists": [
+                            {
+                                "artist": "shn shn",
+                                "profile_url": "https://montreal.mutek.org/en/artists/shn-shn",
+                                "date": "29 Aug",
+                                "start_time": "17:00",
+                                "end_time": "17:40"
+                            },
+                            {
+                                "artist": "Marie Delprat",
+                                "profile_url": "https://montreal.mutek.org/en/artists/marie-delprat",
+                                "date": "29 Aug",
+                                "start_time": "17:45",
+                                "end_time": "18:25"
+                            },
+                            {
+                                "artist": "Measure",
+                                "profile_url": "https://montreal.mutek.org/en/artists/measure",
+                                "date": "29 Aug",
+                                "start_time": "18:30",
+                                "end_time": "19:15"
+                            },
+                            {
+                                "artist": "chiquitamagic",
+                                "profile_url": "https://montreal.mutek.org/en/artists/chiquitamagic",
+                                "date": "29 Aug",
+                                "start_time": "19:20",
+                                "end_time": "20:20"
+                            },
+                            {
+                                "artist": "Hot Sleepers",
+                                "profile_url": "https://montreal.mutek.org/en/artists/hot-sleepers",
+                                "date": "29 Aug",
+                                "start_time": "20:25",
+                                "end_time": "21:55"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-3",
+                "structured_schedule": {
+                    "Maison symphonique": {
+                        "program_track": "X/VISIONS 3",
+                        "artists": [
+                            {
+                                "artist": "Fennesz & Lillevan",
+                                "profile_url": "https://montreal.mutek.org/en/artists/fennesz-lillevan",
+                                "date": "29 Aug",
+                                "start_time": "19:00",
+                                "end_time": "20:00"
+                            },
+                            {
+                                "artist": "Ah! Kosmos and Hainbach",
+                                "profile_url": "https://montreal.mutek.org/en/artists/ah-kosmos-and-hainbach",
+                                "date": "29 Aug",
+                                "start_time": "20:20",
+                                "end_time": "21:20"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/metropolis-2",
+                "structured_schedule": {
+                    "MTELUS": {
+                        "program_track": "MÉTROPOLIS 2",
+                        "artists": [
+                            {
+                                "artist": "Patche",
+                                "profile_url": "https://montreal.mutek.org/en/artists/patche",
+                                "date": "29 Aug",
+                                "start_time": "23:00",
+                                "end_time": "00:00"
+                            },
+                            {
+                                "artist": "Rival Consoles + David Sydiongco",
+                                "profile_url": "https://montreal.mutek.org/en/artists/rival-consoles",
+                                "date": "29 Aug",
+                                "start_time": "00:10",
+                                "end_time": "01:25"
+                            },
+                            {
+                                "artist": "CUERPOS",
+                                "profile_url": "https://montreal.mutek.org/en/artists/cuerpos",
+                                "date": "29 Aug",
+                                "start_time": "01:30",
+                                "end_time": "02:30"
+                            },
+                            {
+                                "artist": "Facta",
+                                "profile_url": "https://montreal.mutek.org/en/artists/facta",
+                                "date": "29 Aug",
+                                "start_time": "02:35",
+                                "end_time": "03:35"
+                            },
+                            {
+                                "artist": "Ben UFO",
+                                "profile_url": "https://montreal.mutek.org/en/artists/ben-ufo",
+                                "date": "29 Aug",
+                                "start_time": "03:40",
+                                "end_time": "06:00"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-4",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 4",
+                        "artists": [
+                            {
+                                "artist": "con secuencias + Milo Reinhardt",
+                                "profile_url": "https://montreal.mutek.org/en/artists/con-secuencias-milo-reinhardt",
+                                "date": "29 Aug",
+                                "start_time": "22:30",
+                                "end_time": "23:20"
+                            },
+                            {
+                                "artist": "Alan Harman",
+                                "profile_url": "https://montreal.mutek.org/en/artists/alan-harman",
+                                "date": "29 Aug",
+                                "start_time": "23:55",
+                                "end_time": "00:55"
+                            },
+                            {
+                                "artist": "M Salaciak",
+                                "profile_url": "https://montreal.mutek.org/en/artists/m-salaciak",
+                                "date": "29 Aug",
+                                "start_time": "01:15",
+                                "end_time": "02:15"
+                            }
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 4",
+                        "artists": [
+                            {
+                                "artist": "El Ángel Exterminador & Anastasiia Vorobiova",
+                                "profile_url": "https://montreal.mutek.org/en/artists/el-angel-exterminador-anastasiia-vorobiova",
+                                "date": "29 Aug",
+                                "start_time": "23:15",
+                                "end_time": "00:00"
+                            },
+                            {
+                                "artist": "Evicshen",
+                                "profile_url": "https://montreal.mutek.org/en/artists/evicshen",
+                                "date": "29 Aug",
+                                "start_time": "00:05",
+                                "end_time": "00:45"
+                            },
+                            {
+                                "artist": "Violent Magic Orchestra (VMO)",
+                                "profile_url": "https://montreal.mutek.org/en/artists/vmo-a-k-a-violent-magic-orchestra",
+                                "date": "29 Aug",
+                                "start_time": "00:55",
+                                "end_time": "01:55"
+                            },
+                            {
+                                "artist": "Cry (Kilbourne & Relaxer)",
+                                "profile_url": "https://montreal.mutek.org/en/artists/cry",
+                                "date": "29 Aug",
+                                "start_time": "02:00",
+                                "end_time": "03:00"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/play-2",
+                "structured_schedule": {
+                    "Studio-Théâtre des Grands Ballets": {
+                        "program_track": "PLAY 2",
+                        "artists": [
+                            {
+                                "artist": "Super Galaxy Meow Meow",
+                                "profile_url": "https://montreal.mutek.org/en/artists/super-galaxy-meow-meow",
+                                "date": "30 Aug",
+                                "start_time": "15:00",
+                                "end_time": "15:35"
+                            },
+                            {
+                                "artist": "Jenn Mong & Trevor Van de Velde",
+                                "profile_url": "https://montreal.mutek.org/en/artists/jenn-mong-trevor-van-de-velde",
+                                "date": "30 Aug",
+                                "start_time": "15:45",
+                                "end_time": "16:30"
+                            },
+                            {
+                                "artist": "Paul Vivien",
+                                "profile_url": "https://montreal.mutek.org/en/artists/paul-vivien",
+                                "date": "30 Aug",
+                                "start_time": "16:40",
+                                "end_time": "17:10"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-6",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 6",
+                        "artists": [
+                            {
+                                "artist": "Sarah Rossy",
+                                "profile_url": "https://montreal.mutek.org/en/artists/sarah-rossy",
+                                "date": "30 Aug",
+                                "start_time": "17:00",
+                                "end_time": "17:45"
+                            },
+                            {
+                                "artist": "Julian Sartorius",
+                                "profile_url": "https://montreal.mutek.org/en/artists/julian-sartorius",
+                                "date": "30 Aug",
+                                "start_time": "17:55",
+                                "end_time": "18:55"
+                            },
+                            {
+                                "artist": "Orange Moon",
+                                "profile_url": "https://montreal.mutek.org/en/artists/orange-moon",
+                                "date": "30 Aug",
+                                "start_time": "19:00",
+                                "end_time": "20:30"
+                            },
+                            {
+                                "artist": "Jordan Gardner",
+                                "profile_url": "https://montreal.mutek.org/en/artists/jordan-gardner",
+                                "date": "30 Aug",
+                                "start_time": "20:35",
+                                "end_time": "21:20"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-5",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 5",
+                        "artists": [
+                            {
+                                "artist": "ebb",
+                                "profile_url": "https://montreal.mutek.org/en/artists/ebb",
+                                "date": "30 Aug",
+                                "start_time": "22:30",
+                                "end_time": "23:15"
+                            },
+                            {
+                                "artist": "Poirier",
+                                "profile_url": "https://montreal.mutek.org/en/artists/poirier",
+                                "date": "30 Aug",
+                                "start_time": "23:35",
+                                "end_time": "00:25"
+                            },
+                            {
+                                "artist": "Nazar",
+                                "profile_url": "https://montreal.mutek.org/en/artists/nazar",
+                                "date": "30 Aug",
+                                "start_time": "00:30",
+                                "end_time": "01:30"
+                            },
+                            {
+                                "artist": "Dave Huismans",
+                                "profile_url": "https://montreal.mutek.org/en/artists/dave-huismans",
+                                "date": "30 Aug",
+                                "start_time": "01:35",
+                                "end_time": "02:35"
+                            }
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 5",
+                        "artists": [
+                            {
+                                "artist": "Purelink with Mika Oki",
+                                "profile_url": "https://montreal.mutek.org/en/artists/purelink",
+                                "date": "30 Aug",
+                                "start_time": "23:00",
+                                "end_time": "23:45"
+                            },
+                            {
+                                "artist": "Matthew Herbert & Julian Sartorius",
+                                "profile_url": "https://montreal.mutek.org/en/artists/matthew-herbert-julian-sartorius",
+                                "date": "30 Aug",
+                                "start_time": "23:55",
+                                "end_time": "00:55"
+                            },
+                            {
+                                "artist": "Dana Ruh",
+                                "profile_url": "https://montreal.mutek.org/en/artists/dana-ruh",
+                                "date": "30 Aug",
+                                "start_time": "01:00",
+                                "end_time": "02:00"
+                            },
+                            {
+                                "artist": "MUTEK Soundsystem",
+                                "profile_url": "https://montreal.mutek.org/en/artists/mutek-soundsystem",
+                                "date": "30 Aug",
+                                "start_time": "02:30",
+                                "end_time": "05:30"
+                            }
+                        ]
+                    }
+                }
+            }
+        ];
+
+        // Mappings & Colors
+        const trackColors = {
+            'EXPÉRIENCE': { bg: 'bg-emerald-950/80', border: 'border-emerald-500/50', text: 'text-emerald-300', accent: '#10B981' },
+            'NOCTURNE': { bg: 'bg-purple-950/80', border: 'border-purple-500/50', text: 'text-purple-300', accent: '#A855F7' },
+            'X/VISIONS': { bg: 'bg-blue-950/80', border: 'border-blue-500/50', text: 'text-blue-300', accent: '#3B82F6' },
+            'MÉTROPOLIS': { bg: 'bg-pink-950/80', border: 'border-pink-500/50', text: 'text-pink-300', accent: '#EC4899' },
+            'PLAY': { bg: 'bg-amber-950/80', border: 'border-amber-500/50', text: 'text-amber-300', accent: '#F59E0B' },
+            'DEFAULT': { bg: 'bg-gray-800/80', border: 'border-gray-600/50', text: 'text-gray-300', accent: '#6B7280' }
+        };
+
+        const dayNames = {
+            "25 Aug": "Tuesday",
+            "26 Aug": "Wednesday",
+            "27 Aug": "Thursday",
+            "28 Aug": "Friday",
+            "29 Aug": "Saturday",
+            "30 Aug": "Sunday"
+        };
+
+        // App State
+        let currentSearch = '';
+        let activeDateFilter = 'ALL';
+        let hourScaleHeight = 70; // pixels per hour
+
+        // Normalize & Process Data
+        function processData() {
+            const dateMap = new Map();
+            // Expected chronological dates
+            const dateOrder = ["25 Aug", "26 Aug", "27 Aug", "28 Aug", "29 Aug", "30 Aug"];
+
+            dateOrder.forEach(date => {
+                dateMap.set(date, new Map());
+            });
+
+            rawFestivalData.forEach(event => {
+                const url = event.event_url;
+                const schedule = event.structured_schedule;
+
+                Object.keys(schedule).forEach(venueName => {
+                    // Standardize Venue Names (Fix spelling errors like Satoshpère)
+                    let cleanVenue = venueName.trim();
+                    if (cleanVenue === 'Satoshpère') cleanVenue = 'Satosphère';
+
+                    const trackInfo = schedule[venueName];
+                    const programTrack = trackInfo.program_track || "Unknown";
+                    
+                    // Create a unique key for the venue+track combo
+                    const venueKey = cleanVenue + '|' + programTrack;
+
+                    if (trackInfo.artists && Array.isArray(trackInfo.artists)) {
+                        trackInfo.artists.forEach(item => {
+                            const date = item.date;
+                            if (!dateMap.has(date)) {
+                                dateMap.set(date, new Map());
+                            }
+
+                            const venuesInDate = dateMap.get(date);
+                            if (!venuesInDate.has(venueKey)) {
+                                venuesInDate.set(venueKey, {
+                                    venue: cleanVenue,
+                                    trackName: programTrack,
+                                    eventUrl: url,
+                                    performances: []
+                                });
+                            }
+
+                            venuesInDate.get(venueKey).performances.push({
+                                ...item,
+                                track: programTrack,
+                                venue: cleanVenue,
+                                event_url: url
+                            });
+                        });
+                    }
+                });
+            });
+
+            return { dateMap, dateOrder };
+        }
+
+        // Helper: Get Track Category
+        function getTrackCategory(trackName) {
+            if (!trackName) return 'DEFAULT';
+            const upper = trackName.toUpperCase();
+            if (upper.includes('EXPÉRIENCE')) return 'EXPÉRIENCE';
+            if (upper.includes('NOCTURNE')) return 'NOCTURNE';
+            if (upper.includes('X/VISIONS')) return 'X/VISIONS';
+            if (upper.includes('MÉTROPOLIS')) return 'MÉTROPOLIS';
+            if (upper.includes('PLAY')) return 'PLAY';
+            return 'DEFAULT';
+        }
+
+        // Helper: Convert "HH:MM" to float hour (handling post-midnight times e.g. 02:00 -> 26.0)
+        function parseTimeToHours(timeStr, baseDate) {
+            if (!timeStr || timeStr === 'Unknown') return null;
+            const [h, m] = timeStr.split(':').map(Number);
+            let hourVal = h + m / 60;
+            // Handle late night sets after midnight (e.g., 00:00 - 06:00 counts as late night of current programming day)
+            if (hourVal < 12) {
+                hourVal += 24;
+            }
+            return hourVal;
+        }
+
+        // Render Schedule Matrix
+        function renderSchedule() {
+            const { dateMap, dateOrder } = processData();
+            const gridContainer = document.getElementById('scheduleGrid');
+
+            // Timeline Bounds (14:00 PM to 30:00 / 06:00 AM next morning)
+            const minHour = 14; 
+            const maxHour = 30; // 6:00 AM late
+            const totalHours = maxHour - minHour;
+
+            // Filter Dates based on selection
+            const displayedDates = activeDateFilter === 'ALL' 
+                ? dateOrder 
+                : dateOrder.filter(d => d === activeDateFilter);
+
+            // Compute total venues / columns and build hierarchical groups
+            let columns = [];
+            let dateGroups = [];
+            
+            // Map alternating background colors for dates to visually separate them
+            const dateBgColors = {};
+            let dIdx = 0;
+            displayedDates.forEach(d => {
+                dateBgColors[d] = (dIdx % 2 === 0) ? 'bg-transparent' : 'bg-blue-900/5';
+                dIdx++;
+            });
+
+            displayedDates.forEach(date => {
+                const venuesMap = dateMap.get(date);
+                if (venuesMap && venuesMap.size > 0) {
+                    
+                    // Group by trackName to merge track headers
+                    let tracksMap = new Map();
+                    for (const [vKey, vData] of venuesMap.entries()) {
+                        if (!tracksMap.has(vData.trackName)) {
+                            tracksMap.set(vData.trackName, {
+                                trackName: vData.trackName,
+                                eventUrl: vData.eventUrl,
+                                venues: []
+                            });
+                        }
+                        tracksMap.get(vData.trackName).venues.push(vData);
+                    }
+
+                    let dateColCount = 0;
+                    let trackGroups = [];
+
+                    // Sort tracks alphabetically and assign columns
+                    Array.from(tracksMap.values()).sort((a,b) => a.trackName.localeCompare(b.trackName)).forEach(tGroup => {
+                        let trackColCount = tGroup.venues.length;
+                        dateColCount += trackColCount;
+                        trackGroups.push({
+                            trackName: tGroup.trackName,
+                            eventUrl: tGroup.eventUrl,
+                            span: trackColCount
+                        });
+
+                        // Sort venues consistently
+                        tGroup.venues.sort((a, b) => {
+                            if (a.venue === 'Main Venue') return -1;
+                            if (b.venue === 'Main Venue') return 1;
+                            return a.venue.localeCompare(b.venue);
+                        }).forEach(v => {
+                            columns.push({
+                                date,
+                                dayName: dayNames[date] || '',
+                                venue: v.venue,
+                                trackName: v.trackName,
+                                eventUrl: v.eventUrl,
+                                performances: v.performances
+                            });
+                        });
+                    });
+
+                    dateGroups.push({
+                        date,
+                        dayName: dayNames[date],
+                        span: dateColCount,
+                        tracks: trackGroups
+                    });
+                }
+            });
+
+            // Start Building HTML
+            let html = ``;
+
+            // Table Layout Header Structure
+            const columnWidth = 220; // width per venue column in pixels
+            const timeAxisWidth = 80; // width of y-axis time column
+            const totalWidth = timeAxisWidth + (columns.length * columnWidth);
+
+            html += `<div style="width: ${Math.max(totalWidth, 100)}px;" class="flex flex-col relative">`;
+
+            // === 1. TOP HEADER (X-AXIS LAYER 1: DATE, LAYER 2: TRACK, LAYER 3: VENUES) ===
+            html += `<div class="sticky-column-header bg-[#14141A] border-b border-gray-800 flex flex-col shadow-lg">`;
+            
+            // Layer 1: Date Bar
+            html += `<div class="flex border-b border-gray-800/60 bg-[#1A1A24]">`;
+            html += `<div class="sticky-corner bg-[#1A1A24] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 flex items-center justify-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Time</div>`;
+            
+            dateGroups.forEach(dg => {
+                const w = dg.span * columnWidth;
+                html += `
+                    <div style="width: ${w}px;" class="border-r border-gray-800 py-2.5 px-3 text-center flex flex-col justify-center items-center">
+                        <span class="text-sm font-bold text-blue-400 tracking-wide">${dg.dayName}, ${dg.date}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`; // End Date Bar
+
+            // Layer 2: Track Bar (Linked to Event URL)
+            html += `<div class="flex border-b border-gray-800/60 bg-[#17171F]">`;
+            html += `<div class="sticky-corner bg-[#17171F] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer
+            
+            dateGroups.forEach(dg => {
+                dg.tracks.forEach(tg => {
+                    const w = tg.span * columnWidth;
+                    const catKey = getTrackCategory(tg.trackName);
+                    const style = trackColors[catKey] || trackColors.DEFAULT;
+                    
+                    html += `
+                        <div style="width: ${w}px;" class="border-r border-gray-800/80 py-1.5 px-2 text-center text-xs font-semibold uppercase tracking-wider flex items-center justify-center">
+                            <a href="${tg.eventUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1.5 ${style.text} hover:text-white transition-colors">
+                                ${tg.trackName}
+                                <i data-lucide="external-link" class="w-3 h-3 opacity-70"></i>
+                            </a>
+                        </div>
+                    `;
+                });
+            });
+            html += `</div>`; // End Track Bar
+
+            // Layer 3: Venue Bar
+            html += `<div class="flex">`;
+            html += `<div class="sticky-corner bg-[#14141A] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer
+            
+            columns.forEach(col => {
+                html += `
+                    <div style="width: ${columnWidth}px;" class="border-r border-gray-800/80 bg-[#14141A] py-2 px-3 text-center text-xs font-medium text-gray-300 truncate flex items-center justify-center gap-1.5">
+                        <i data-lucide="map-pin" class="w-3 h-3 text-purple-400"></i>
+                        <span class="truncate" title="${col.venue}">${col.venue}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`; // End Venue Bar
+            html += `</div>`; // End Header
+
+            // === 2. GRID BODY (Y-AXIS TIME & COLUMNS) ===
+            const gridHeight = totalHours * hourScaleHeight;
+            html += `<div class="flex relative time-grid-bg" style="height: ${gridHeight}px;">`;
+
+            // Y-Axis Time Scale Column
+            html += `<div class="sticky-time-axis bg-[#0D0D11]/95 border-r border-gray-800 w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] flex flex-col relative select-none">`;
+            for (let hour = minHour; hour < maxHour; hour++) {
+                const topPos = (hour - minHour) * hourScaleHeight;
+                const displayHour = hour >= 24 ? hour - 24 : hour;
+                const formattedHour = `${String(displayHour).padStart(2, '0')}:00`;
+                html += `
+                    <div style="top: ${topPos}px; height: ${hourScaleHeight}px;" class="absolute w-full border-t border-gray-800/40 px-2 pt-1 text-[11px] font-mono text-gray-400 flex items-start justify-end pr-3">
+                        ${formattedHour}
+                    </div>
+                `;
+            }
+            html += `</div>`; // End Time Axis Column
+
+            // Venue Columns & Event Boxes
+            columns.forEach(col => {
+                const dayBg = dateBgColors[col.date] || 'bg-transparent';
+                // Apply alternating date background to column here
+                html += `<div style="width: ${columnWidth}px;" class="relative border-r border-gray-800/40 h-full ${dayBg}">`;
+
+                // Draw Horizontal Hour Guide Lines
+                for (let hour = minHour; hour < maxHour; hour++) {
+                    const topPos = (hour - minHour) * hourScaleHeight;
+                    html += `<div style="top: ${topPos}px;" class="absolute w-full border-t border-gray-800/20"></div>`;
+                }
+
+                // Render Performances
+                let unknownTimeOffset = 10; // offset stacking for "Unknown" time performances
+                col.performances.forEach(perf => {
+                    const startVal = parseTimeToHours(perf.start_time, perf.date);
+                    const endVal = parseTimeToHours(perf.end_time, perf.date);
+
+                    // Filter search matching
+                    const isSearchMatched = currentSearch.trim() === '' || 
+                        perf.artist.toLowerCase().includes(currentSearch.toLowerCase()) || 
+                        perf.track.toLowerCase().includes(currentSearch.toLowerCase());
+
+                    const catKey = getTrackCategory(perf.track);
+                    const style = trackColors[catKey] || trackColors.DEFAULT;
+
+                    if (startVal !== null && endVal !== null) {
+                        // Positioned Box
+                        let durationHours = endVal - startVal;
+                        if (durationHours <= 0) durationHours = 0.5; // fallback min height
+
+                        const topPixels = (startVal - minHour) * hourScaleHeight;
+                        const heightPixels = Math.max(durationHours * hourScaleHeight, 36);
+
+                        html += `
+                            <div style="top: ${topPixels}px; height: ${heightPixels}px; left: 4px; right: 4px;" 
+                                 onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
+                                 class="absolute performance-card rounded-lg p-2 border ${style.bg} ${style.border} cursor-pointer flex flex-col justify-between overflow-hidden group shadow-md transition-all ${isSearchMatched ? 'opacity-100 ring-1 ring-white/10' : 'opacity-25 grayscale'}">
+                                <div>
+                                    <div class="flex items-start justify-between gap-1">
+                                        <h4 class="font-bold text-xs text-white leading-tight truncate group-hover:text-blue-200" title="${perf.artist}">
+                                            ${perf.artist}
+                                        </h4>
+                                    </div>
+                                    <!-- Program Track has been removed from here -->
+                                </div>
+                                <div class="flex items-center justify-between text-[10px] text-gray-300 font-mono mt-1 pt-1 border-t border-white/10">
+                                    <span class="flex items-center gap-1 font-semibold">
+                                        <i data-lucide="clock" class="w-2.5 h-2.5 text-gray-400"></i>
+                                        ${perf.start_time}
+                                    </span>
+                                    <span class="text-[9px] text-gray-400">${perf.end_time}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // "Unknown" Time Performances fallback rendered at top banner in column
+                        const topPixels = unknownTimeOffset;
+                        unknownTimeOffset += 52;
+
+                        html += `
+                            <div style="top: ${topPixels}px; height: 46px; left: 4px; right: 4px;" 
+                                 onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
+                                 class="absolute performance-card rounded-lg p-2 border bg-gray-900/90 border-dashed border-gray-600 cursor-pointer flex flex-col justify-between overflow-hidden shadow-md ${isSearchMatched ? 'opacity-100' : 'opacity-20'}">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-semibold text-xs text-gray-200 truncate" title="${perf.artist}">${perf.artist}</h4>
+                                    <span class="text-[9px] bg-gray-800 px-1 rounded text-gray-400">TBA</span>
+                                </div>
+                                <div class="text-[10px] text-gray-400 truncate font-mono">Time: ${perf.start_time}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                html += `</div>`; // End Column
+            });
+
+            html += `</div>`; // End Grid Body
+            html += `</div>`; // End Main Inner Container
+
+            gridContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // Render Date Filter Buttons
+        function renderDateFilters() {
+            const dateContainer = document.getElementById('dateFilters');
+            const dates = ["ALL", "25 Aug", "26 Aug", "27 Aug", "28 Aug", "29 Aug", "30 Aug"];
+
+            dateContainer.innerHTML = dates.map(d => {
+                const isActive = activeDateFilter === d;
+                const label = d === 'ALL' ? 'All Days' : d;
+                return `
+                    <button onclick="setDateFilter('${d}')" 
+                        class="px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all ${
+                            isActive 
+                            ? 'bg-blue-600 text-white shadow-sm' 
+                            : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                        }">
+                        ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setDateFilter(dateStr) {
+            activeDateFilter = dateStr;
+            renderDateFilters();
+            renderSchedule();
+        }
+
+        // Render Track Legend
+        function renderTrackLegend() {
+            const legendContainer = document.getElementById('trackLegend');
+            const tracks = [
+                { name: 'EXPÉRIENCE', key: 'EXPÉRIENCE' },
+                { name: 'NOCTURNE', key: 'NOCTURNE' },
+                { name: 'X/VISIONS', key: 'X/VISIONS' },
+                { name: 'MÉTROPOLIS', key: 'MÉTROPOLIS' },
+                { name: 'PLAY', key: 'PLAY' }
+            ];
+
+            const html = tracks.map(t => {
+                const conf = trackColors[t.key];
+                return `
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#1A1A24] border border-gray-800/80 text-[11px]">
+                        <span class="w-2 h-2 rounded-full" style="background-color: ${conf.accent};"></span>
+                        <span class="text-gray-300 font-medium">${t.name}</span>
+                    </div>
+                `;
+            }).join('');
+
+            legendContainer.innerHTML += html;
+        }
+
+        // Modal Logic
+        function openModal(perf) {
+            const modal = document.getElementById('artistModal');
+            const content = document.getElementById('artistModalContent');
+            
+            document.getElementById('modalArtistName').textContent = perf.artist;
+            document.getElementById('modalTrackBadge').textContent = perf.track;
+            document.getElementById('modalDate').textContent = `${perf.date} 2026 (${dayNames[perf.date] || ''})`;
+            document.getElementById('modalTime').textContent = `${perf.start_time} - ${perf.end_time}`;
+            document.getElementById('modalVenue').textContent = perf.venue;
+            
+            const linkBtn = document.getElementById('modalEventLink');
+            
+            // Prioritize profile URL if available, otherwise fallback to event url
+            if (perf.profile_url) {
+                linkBtn.href = perf.profile_url;
+                linkBtn.classList.remove('hidden');
+                linkBtn.querySelector('span').textContent = 'View Artist Profile';
+            } else if (perf.event_url) {
+                linkBtn.href = perf.event_url;
+                linkBtn.classList.remove('hidden');
+                linkBtn.querySelector('span').textContent = 'View Event Page';
+            } else {
+                linkBtn.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('artistModal');
+            const content = document.getElementById('artistModalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Initialization & Event Listeners
+        window.onload = function() {
+            renderDateFilters();
+            renderTrackLegend();
+            renderSchedule();
+
+            // Search input handler
+            const searchInput = document.getElementById('searchInput');
+            const clearSearch = document.getElementById('clearSearch');
+
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                if (currentSearch) {
+                    clearSearch.classList.remove('hidden');
+                } else {
+                    clearSearch.classList.add('hidden');
+                }
+                renderSchedule();
+            });
+
+            clearSearch.addEventListener('click', () => {
+                searchInput.value = '';
+                currentSearch = '';
+                clearSearch.classList.add('hidden');
+                renderSchedule();
+            });
+
+            // Modal Close listeners
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('artistModal').addEventListener('click', (e) => {
+                if (e.target.id === 'artistModal') closeModal();
+            });
+
+            // Zoom Control Listeners
+            document.getElementById('zoomInBtn').addEventListener('click', () => {
+                if (hourScaleHeight < 140) {
+                    hourScaleHeight += 15;
+                    document.getElementById('zoomLevelText').textContent = `${Math.round((hourScaleHeight/70)*100)}%`;
+                    renderSchedule();
+                }
+            });
+
+            document.getElementById('zoomOutBtn').addEventListener('click', () => {
+                if (hourScaleHeight > 45) {
+                    hourScaleHeight -= 15;
+                    document.getElementById('zoomLevelText').textContent = `${Math.round((hourScaleHeight/70)*100)}%`;
+                    renderSchedule();
+                }
+            });
+        };
+    </script>
+</body>
+</html>

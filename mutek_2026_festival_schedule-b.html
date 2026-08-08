@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUTEK 2026 Interactive Schedule</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* slate-950 */
+            color: #f8fafc;
+            overflow: hidden; /* App takes full screen, internal scrolling */
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        /* Thicker strong divider for days */
+        .day-divider {
+            border-right-width: 4px !important;
+            border-right-color: #475569 !important; /* slate-600 */
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <nav class="bg-slate-900 border-b border-slate-700 px-6 py-4 flex flex-col md:flex-row gap-4 items-center justify-between shrink-0 shadow-md relative z-50">
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold text-white tracking-wide">MUTEK <span class="text-blue-500">2026</span></h1>
+            <span class="px-3 py-1 bg-slate-800 rounded-full text-xs font-semibold text-slate-300 hidden md:inline-block">Schedule Diagram</span>
+        </div>
+        
+        <!-- Controls: Day Filters, Search, Zoom -->
+        <div class="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            
+            <!-- Day Filters Container (injected via JS) -->
+            <div id="day-filters" class="flex bg-slate-950 p-1 rounded-lg border border-slate-700/50 overflow-x-auto max-w-full">
+                <!-- Buttons populate here -->
+            </div>
+
+            <!-- Search -->
+            <div class="relative shrink-0">
+                <input type="text" id="search-input" placeholder="Search artists..." class="bg-slate-800 text-white text-sm rounded-lg pl-9 pr-4 py-1.5 border border-slate-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full md:w-48 transition-all">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+
+            <!-- Zoom -->
+            <div class="flex items-center gap-1 bg-slate-950 rounded-lg p-1 border border-slate-700/50 shrink-0">
+                <button id="zoom-out" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors" title="Zoom Out">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                </button>
+                <span id="zoom-display" class="text-xs font-medium text-slate-300 w-10 text-center">100%</span>
+                <button id="zoom-in" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors" title="Zoom In">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Scrollable Area -->
+    <main class="flex-1 overflow-auto relative bg-slate-950" id="schedule-container">
+        <!-- Content injected here by JS -->
+    </main>
+
+    <!-- Event Details Modal -->
+    <div id="event-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-md w-full m-4 transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="p-6 relative">
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                
+                <div class="mb-2">
+                    <span id="modal-track" class="text-xs font-bold uppercase tracking-wider text-blue-400"></span>
+                </div>
+                
+                <h2 id="modal-artist" class="text-3xl font-bold text-white mb-2 leading-tight"></h2>
+                
+                <div class="flex flex-col gap-3 mt-6 text-slate-300">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span id="modal-date"></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="modal-time"></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span id="modal-venue" class="font-medium text-white"></span>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex gap-3">
+                    <a id="modal-profile-link" href="#" target="_blank" class="flex-1 bg-white text-slate-900 text-center font-bold py-3 px-4 rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                        View Artist Profile
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Use the raw data provided
+        const rawData = [
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-1",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 1",
+                        "artists": [
+                            {"artist": "Ida Toninato", "profile_url": "https://montreal.mutek.org/en/artists/ida-toninato", "date": "25 Aug", "start_time": "18:30", "end_time": "19:05"},
+                            {"artist": "Pick a Piper", "profile_url": "https://montreal.mutek.org/en/artists/pick-a-piper", "date": "25 Aug", "start_time": "19:15", "end_time": "20:00"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-2",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 2",
+                        "artists": [
+                            {"artist": "16:9 ratio", "profile_url": "https://montreal.mutek.org/en/artists/169-ratio", "date": "26 Aug", "start_time": "17:00", "end_time": "18:00"},
+                            {"artist": "dustbunny", "profile_url": "https://montreal.mutek.org/en/artists/dustbunny", "date": "26 Aug", "start_time": "18:05", "end_time": "18:35"},
+                            {"artist": "NGL Flounce", "profile_url": "https://montreal.mutek.org/en/artists/ngl-flounce", "date": "26 Aug", "start_time": "18:40", "end_time": "19:25"},
+                            {"artist": "jamvvis", "profile_url": "https://montreal.mutek.org/en/artists/jamvvis-yfbob", "date": "26 Aug", "start_time": "19:35", "end_time": "20:20"},
+                            {"artist": "NVST", "profile_url": "https://montreal.mutek.org/en/artists/nvst", "date": "26 Aug", "start_time": "20:30", "end_time": "21:20"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-1",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 1",
+                        "artists": [
+                            {"artist": "Weidi Zhang & Weilu Ge", "profile_url": "https://montreal.mutek.org/en/artists/weidi-zhang-weilu-ge", "date": "26 Aug", "start_time": "Unknown", "end_time": "Unknown"},
+                            {"artist": "mesocosm", "profile_url": "https://montreal.mutek.org/en/artists/mesocosm", "date": "26 Aug", "start_time": "Unknown", "end_time": "Unknown"},
+                            {"artist": "Guillaume Coutu Dumont & Line Katcho", "profile_url": "https://montreal.mutek.org/en/artists/guillaume-coutu-dumont-line-katcho", "date": "26 Aug", "start_time": "Unknown", "end_time": "Unknown"},
+                            {"artist": "France Jobin & Markus Heckmann", "profile_url": "https://montreal.mutek.org/en/artists/france-jobin", "date": "26 Aug", "start_time": "Unknown", "end_time": "Unknown"}
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 1",
+                        "artists": [
+                            {"artist": "Marc-Antoine Barbier", "profile_url": "https://montreal.mutek.org/en/artists/marc-antoine-barbier", "date": "26 Aug", "start_time": "22:30", "end_time": "23:15"},
+                            {"artist": "Debit", "profile_url": "https://montreal.mutek.org/en/artists/debit", "date": "26 Aug", "start_time": "23:20", "end_time": "00:10"},
+                            {"artist": "Matthew Herbert", "profile_url": "https://montreal.mutek.org/en/artists/matthew-herbert", "date": "26 Aug", "start_time": "00:20", "end_time": "01:20"},
+                            {"artist": "Barker", "profile_url": "https://montreal.mutek.org/en/artists/barker", "date": "26 Aug", "start_time": "01:30", "end_time": "02:30"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-3",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 3",
+                        "artists": [
+                            {"artist": "Abulzooz", "profile_url": "https://montreal.mutek.org/en/artists/zaid-bustami", "date": "27 Aug", "start_time": "Unknown", "end_time": "Unknown"},
+                            {"artist": "wetdogg", "profile_url": "https://montreal.mutek.org/en/artists/wetdogg", "date": "27 Aug", "start_time": "Unknown", "end_time": "Unknown"},
+                            {"artist": "Monsieurmadam", "profile_url": "https://montreal.mutek.org/en/artists/monsieurmadam", "date": "27 Aug", "start_time": "Unknown", "end_time": "Unknown"},
+                            {"artist": "WAWA", "profile_url": "https://montreal.mutek.org/en/artists/wawa", "date": "27 Aug", "start_time": "Unknown", "end_time": "Unknown"},
+                            {"artist": "Istanbul Ghetto Club", "profile_url": "https://montreal.mutek.org/en/artists/istanbul-ghetto-club", "date": "27 Aug", "start_time": "Unknown", "end_time": "Unknown"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-1",
+                "structured_schedule": {
+                    "Maison symphonique": {
+                        "program_track": "X/VISIONS 1",
+                        "artists": [
+                            {"artist": "Kara-Lis Coverdale", "profile_url": "https://montreal.mutek.org/en/artists/kara-lis-coverdale", "date": "27 Aug", "start_time": "19:00", "end_time": "19:55"},
+                            {"artist": "Kali Malone", "profile_url": "https://montreal.mutek.org/en/artists/kali-malone", "date": "27 Aug", "start_time": "20:15", "end_time": "21:15"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-2",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 2",
+                        "artists": [
+                            {"artist": "Nelly-Eve Rajotte", "profile_url": "https://montreal.mutek.org/en/artists/nelly-eve-rajotte", "date": "27 Aug", "start_time": "22:30", "end_time": "23:00"},
+                            {"artist": "MOORE + SALAS", "profile_url": "https://montreal.mutek.org/en/artists/moore-salas", "date": "27 Aug", "start_time": "23:20", "end_time": "00:05"},
+                            {"artist": "Arbor and Tzu Ni", "profile_url": "https://montreal.mutek.org/en/artists/arbor-and-tzu-ni", "date": "27 Aug", "start_time": "00:40", "end_time": "01:10"},
+                            {"artist": "Korea Town Acid & Ajeebsir", "profile_url": "https://montreal.mutek.org/en/artists/korea-town-acid-ajeebsir", "date": "27 Aug", "start_time": "01:30", "end_time": "02:30"}
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 2",
+                        "artists": [
+                            {"artist": "Noémi Büchi", "profile_url": "https://montreal.mutek.org/en/artists/noemi-buchi", "date": "27 Aug", "start_time": "22:45", "end_time": "23:35"},
+                            {"artist": "ELECTRONICOS FANTASTICOS!", "profile_url": "https://montreal.mutek.org/en/artists/electronicos-fantasticos", "date": "27 Aug", "start_time": "23:50", "end_time": "00:50"},
+                            {"artist": "Zora Jones", "profile_url": "https://montreal.mutek.org/en/artists/zora-jones", "date": "27 Aug", "start_time": "01:05", "end_time": "02:05"},
+                            {"artist": "Jump Source", "profile_url": "https://montreal.mutek.org/en/artists/jump-source", "date": "27 Aug", "start_time": "02:10", "end_time": "03:40"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-4",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 4",
+                        "artists": [
+                            {"artist": "Vivian Li", "profile_url": "https://montreal.mutek.org/en/artists/vivian-li", "date": "28 Aug", "start_time": "17:00", "end_time": "17:55"},
+                            {"artist": "ArtSaves", "profile_url": "https://montreal.mutek.org/en/artists/artsaves", "date": "28 Aug", "start_time": "18:00", "end_time": "18:40"},
+                            {"artist": "aria", "profile_url": "https://montreal.mutek.org/en/artists/aria", "date": "28 Aug", "start_time": "19:40", "end_time": "21:00"},
+                            {"artist": "Matt & Mark Thibideau", "profile_url": "https://montreal.mutek.org/en/artists/matt-mark-thibideau", "date": "28 Aug", "start_time": "21:10", "end_time": "22:10"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-2",
+                "structured_schedule": {
+                    "Maison symphonique": {
+                        "program_track": "X/VISIONS 2",
+                        "artists": [
+                            {"artist": "Tristan Perich & James McVinnie", "profile_url": "https://montreal.mutek.org/en/artists/tristan-perich-james-mcvinnie", "date": "28 Aug", "start_time": "19:00", "end_time": "20:03"},
+                            {"artist": "Voices From The Lake", "profile_url": "https://montreal.mutek.org/en/artists/voices-from-the-lake", "date": "28 Aug", "start_time": "20:28", "end_time": "21:58"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/metropolis-1",
+                "structured_schedule": {
+                    "MTELUS": {
+                        "program_track": "MÉTROPOLIS 1",
+                        "artists": [
+                            {"artist": "Cleo Leigh", "profile_url": "https://montreal.mutek.org/en/artists/cleo-leigh", "date": "28 Aug", "start_time": "23:00", "end_time": "00:00"},
+                            {"artist": "Polygonia", "profile_url": "https://montreal.mutek.org/en/artists/polygonia", "date": "28 Aug", "start_time": "00:05", "end_time": "01:05"},
+                            {"artist": "JakoJako", "profile_url": "https://montreal.mutek.org/en/artists/jakojako", "date": "28 Aug", "start_time": "01:10", "end_time": "02:10"},
+                            {"artist": "Jeff Mills", "profile_url": "https://montreal.mutek.org/en/artists/jeff-mills", "date": "28 Aug", "start_time": "02:15", "end_time": "04:35"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-3",
+                "structured_schedule": {
+                    "Satoshpère": {
+                        "program_track": "NOCTURNE 3",
+                        "artists": [
+                            {"artist": "Florence-Delphine Roux", "profile_url": "https://montreal.mutek.org/en/artists/florence-delphine-roux", "date": "28 Aug", "start_time": "22:30", "end_time": "23:00"},
+                            {"artist": "Hermanos Riffo Gómez", "profile_url": "https://montreal.mutek.org/en/artists/hermanos-riffo-gomez", "date": "28 Aug", "start_time": "23:15", "end_time": "00:00"},
+                            {"artist": "Elsewhere in India ft. Murthovic & Thiruda", "profile_url": "https://montreal.mutek.org/en/artists/elsewhere-in-india-ft-murthovic-thiruda", "date": "28 Aug", "start_time": "00:15", "end_time": "01:00"},
+                            {"artist": "Cheng Daoyuan & Huang Wei", "profile_url": "https://montreal.mutek.org/en/artists/cheng-daoyuan-huang-wei", "date": "28 Aug", "start_time": "01:15", "end_time": "01:40"}
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 3",
+                        "artists": [
+                            {"artist": "Sara Persico & Mika Oki", "profile_url": "https://montreal.mutek.org/en/artists/sara-persico-mika-oki", "date": "28 Aug", "start_time": "22:45", "end_time": "23:30"},
+                            {"artist": "Honeydrip", "profile_url": "https://montreal.mutek.org/en/artists/honeydrip", "date": "28 Aug", "start_time": "23:40", "end_time": "00:25"},
+                            {"artist": "Mia Koden", "profile_url": "https://montreal.mutek.org/en/artists/mia-koden", "date": "28 Aug", "start_time": "00:30", "end_time": "01:30"},
+                            {"artist": "gyrofield", "profile_url": "https://montreal.mutek.org/en/artists/gyrofield", "date": "28 Aug", "start_time": "01:35", "end_time": "02:35"},
+                            {"artist": "A Guy Called Gerald", "profile_url": "https://montreal.mutek.org/en/artists/a-guy-called-gerald", "date": "28 Aug", "start_time": "02:40", "end_time": "03:40"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/play-1",
+                "structured_schedule": {
+                    "Studio-Théâtre des Grands Ballets": {
+                        "program_track": "PLAY 1",
+                        "artists": [
+                            {"artist": "Estelle Schorpp & charline dally", "profile_url": "https://montreal.mutek.org/en/artists/estelle-schorpp-charline-dally", "date": "29 Aug", "start_time": "15:00", "end_time": "15:30"},
+                            {"artist": "pliq", "profile_url": "https://montreal.mutek.org/en/artists/pliq", "date": "29 Aug", "start_time": "15:40", "end_time": "16:20"},
+                            {"artist": "JS Baillat & Mateo Murphy", "profile_url": "https://montreal.mutek.org/en/artists/js-baillat-mateo-murphy", "date": "29 Aug", "start_time": "16:30", "end_time": "17:10"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-5",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 5",
+                        "artists": [
+                            {"artist": "shn shn", "profile_url": "https://montreal.mutek.org/en/artists/shn-shn", "date": "29 Aug", "start_time": "17:00", "end_time": "17:40"},
+                            {"artist": "Marie Delprat", "profile_url": "https://montreal.mutek.org/en/artists/marie-delprat", "date": "29 Aug", "start_time": "17:45", "end_time": "18:25"},
+                            {"artist": "Measure", "profile_url": "https://montreal.mutek.org/en/artists/measure", "date": "29 Aug", "start_time": "18:30", "end_time": "19:15"},
+                            {"artist": "chiquitamagic", "profile_url": "https://montreal.mutek.org/en/artists/chiquitamagic", "date": "29 Aug", "start_time": "19:20", "end_time": "20:20"},
+                            {"artist": "Hot Sleepers", "profile_url": "https://montreal.mutek.org/en/artists/hot-sleepers", "date": "29 Aug", "start_time": "20:25", "end_time": "21:55"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-3",
+                "structured_schedule": {
+                    "Maison symphonique": {
+                        "program_track": "X/VISIONS 3",
+                        "artists": [
+                            {"artist": "Fennesz & Lillevan", "profile_url": "https://montreal.mutek.org/en/artists/fennesz-lillevan", "date": "29 Aug", "start_time": "19:00", "end_time": "20:00"},
+                            {"artist": "Ah! Kosmos and Hainbach", "profile_url": "https://montreal.mutek.org/en/artists/ah-kosmos-and-hainbach", "date": "29 Aug", "start_time": "20:20", "end_time": "21:20"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/metropolis-2",
+                "structured_schedule": {
+                    "MTELUS": {
+                        "program_track": "MÉTROPOLIS 2",
+                        "artists": [
+                            {"artist": "Patche", "profile_url": "https://montreal.mutek.org/en/artists/patche", "date": "29 Aug", "start_time": "23:00", "end_time": "00:00"},
+                            {"artist": "Rival Consoles + David Sydiongco", "profile_url": "https://montreal.mutek.org/en/artists/rival-consoles", "date": "29 Aug", "start_time": "00:10", "end_time": "01:25"},
+                            {"artist": "CUERPOS", "profile_url": "https://montreal.mutek.org/en/artists/cuerpos", "date": "29 Aug", "start_time": "01:30", "end_time": "02:30"},
+                            {"artist": "Facta", "profile_url": "https://montreal.mutek.org/en/artists/facta", "date": "29 Aug", "start_time": "02:35", "end_time": "03:35"},
+                            {"artist": "Ben UFO", "profile_url": "https://montreal.mutek.org/en/artists/ben-ufo", "date": "29 Aug", "start_time": "03:40", "end_time": "06:00"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-4",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 4",
+                        "artists": [
+                            {"artist": "con secuencias + Milo Reinhardt", "profile_url": "https://montreal.mutek.org/en/artists/con-secuencias-milo-reinhardt", "date": "29 Aug", "start_time": "22:30", "end_time": "23:20"},
+                            {"artist": "Alan Harman", "profile_url": "https://montreal.mutek.org/en/artists/alan-harman", "date": "29 Aug", "start_time": "23:55", "end_time": "00:55"},
+                            {"artist": "M Salaciak", "profile_url": "https://montreal.mutek.org/en/artists/m-salaciak", "date": "29 Aug", "start_time": "01:15", "end_time": "02:15"}
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 4",
+                        "artists": [
+                            {"artist": "El Ángel Exterminador & Anastasiia Vorobiova", "profile_url": "https://montreal.mutek.org/en/artists/el-angel-exterminador-anastasiia-vorobiova", "date": "29 Aug", "start_time": "23:15", "end_time": "00:00"},
+                            {"artist": "Evicshen", "profile_url": "https://montreal.mutek.org/en/artists/evicshen", "date": "29 Aug", "start_time": "00:05", "end_time": "00:45"},
+                            {"artist": "Violent Magic Orchestra (VMO)", "profile_url": "https://montreal.mutek.org/en/artists/vmo-a-k-a-violent-magic-orchestra", "date": "29 Aug", "start_time": "00:55", "end_time": "01:55"},
+                            {"artist": "Cry (Kilbourne & Relaxer)", "profile_url": "https://montreal.mutek.org/en/artists/cry", "date": "29 Aug", "start_time": "02:00", "end_time": "03:00"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/play-2",
+                "structured_schedule": {
+                    "Studio-Théâtre des Grands Ballets": {
+                        "program_track": "PLAY 2",
+                        "artists": [
+                            {"artist": "Super Galaxy Meow Meow", "profile_url": "https://montreal.mutek.org/en/artists/super-galaxy-meow-meow", "date": "30 Aug", "start_time": "15:00", "end_time": "15:35"},
+                            {"artist": "Jenn Mong & Trevor Van de Velde", "profile_url": "https://montreal.mutek.org/en/artists/jenn-mong-trevor-van-de-velde", "date": "30 Aug", "start_time": "15:45", "end_time": "16:30"},
+                            {"artist": "Paul Vivien", "profile_url": "https://montreal.mutek.org/en/artists/paul-vivien", "date": "30 Aug", "start_time": "16:40", "end_time": "17:10"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/experience-6",
+                "structured_schedule": {
+                    "Esplanade Tranquille": {
+                        "program_track": "EXPÉRIENCE 6",
+                        "artists": [
+                            {"artist": "Sarah Rossy", "profile_url": "https://montreal.mutek.org/en/artists/sarah-rossy", "date": "30 Aug", "start_time": "17:00", "end_time": "17:45"},
+                            {"artist": "Julian Sartorius", "profile_url": "https://montreal.mutek.org/en/artists/julian-sartorius", "date": "30 Aug", "start_time": "17:55", "end_time": "18:55"},
+                            {"artist": "Orange Moon", "profile_url": "https://montreal.mutek.org/en/artists/orange-moon", "date": "30 Aug", "start_time": "19:00", "end_time": "20:30"},
+                            {"artist": "Jordan Gardner", "profile_url": "https://montreal.mutek.org/en/artists/jordan-gardner", "date": "30 Aug", "start_time": "20:35", "end_time": "21:20"}
+                        ]
+                    }
+                }
+            },
+            {
+                "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-5",
+                "structured_schedule": {
+                    "Satosphère": {
+                        "program_track": "NOCTURNE 5",
+                        "artists": [
+                            {"artist": "ebb", "profile_url": "https://montreal.mutek.org/en/artists/ebb", "date": "30 Aug", "start_time": "22:30", "end_time": "23:15"},
+                            {"artist": "Poirier", "profile_url": "https://montreal.mutek.org/en/artists/poirier", "date": "30 Aug", "start_time": "23:35", "end_time": "00:25"},
+                            {"artist": "Nazar", "profile_url": "https://montreal.mutek.org/en/artists/nazar", "date": "30 Aug", "start_time": "00:30", "end_time": "01:30"},
+                            {"artist": "Dave Huismans", "profile_url": "https://montreal.mutek.org/en/artists/dave-huismans", "date": "30 Aug", "start_time": "01:35", "end_time": "02:35"}
+                        ]
+                    },
+                    "Espace SAT": {
+                        "program_track": "NOCTURNE 5",
+                        "artists": [
+                            {"artist": "Purelink with Mika Oki", "profile_url": "https://montreal.mutek.org/en/artists/purelink", "date": "30 Aug", "start_time": "23:00", "end_time": "23:45"},
+                            {"artist": "Matthew Herbert & Julian Sartorius", "profile_url": "https://montreal.mutek.org/en/artists/matthew-herbert-julian-sartorius", "date": "30 Aug", "start_time": "23:55", "end_time": "00:55"},
+                            {"artist": "Dana Ruh", "profile_url": "https://montreal.mutek.org/en/artists/dana-ruh", "date": "30 Aug", "start_time": "01:00", "end_time": "02:00"},
+                            {"artist": "MUTEK Soundsystem", "profile_url": "https://montreal.mutek.org/en/artists/mutek-soundsystem", "date": "30 Aug", "start_time": "02:30", "end_time": "05:30"}
+                        ]
+                    }
+                }
+            }
+        ];
+
+        // Global State & Layout Constants
+        let currentSearch = '';
+        let currentDayFilter = 'All';
+        let zoomLevel = 1.0;
+
+        const BASE_COL_WIDTH = 240; 
+        const BASE_TIME_AXIS_WIDTH = 80;
+        const BASE_PIXELS_PER_HOUR = 180;
+
+        // Styling based on track categories
+        const trackColors = {
+            'EXPÉRIENCE': 'bg-blue-900/60 border border-blue-500/50 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.15)]',
+            'NOCTURNE': 'bg-purple-900/60 border border-purple-500/50 text-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.15)]',
+            'X/VISIONS': 'bg-emerald-900/60 border border-emerald-500/50 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.15)]',
+            'MÉTROPOLIS': 'bg-rose-900/60 border border-rose-500/50 text-rose-100 shadow-[0_0_15px_rgba(244,63,94,0.15)]',
+            'PLAY': 'bg-amber-900/60 border border-amber-500/50 text-amber-100 shadow-[0_0_15px_rgba(245,158,11,0.15)]',
+            'DEFAULT': 'bg-slate-800 border border-slate-600 text-slate-200'
+        };
+
+        function getTrackColor(trackName) {
+            for (let key in trackColors) {
+                if (trackName.toUpperCase().includes(key)) return trackColors[key];
+            }
+            return trackColors['DEFAULT'];
+        }
+
+        // Alternating background colors for entire days
+        const dayBgColors = [
+            'bg-[#0f172a]/60', // slate-900, slightly darker
+            'bg-[#020617]/40', // slate-950, deeper
+        ];
+
+        function processData() {
+            const columnsMap = new Map();
+            let minHour = 24, maxHour = 0;
+
+            // 1. Flatten and parse events
+            rawData.forEach(eventGroup => {
+                const eventUrl = eventGroup.event_url;
+                const schedule = eventGroup.structured_schedule;
+
+                for (const venueName in schedule) {
+                    const trackObj = schedule[venueName];
+                    const trackName = trackObj.program_track;
+                    const artists = trackObj.artists;
+
+                    artists.forEach(artist => {
+                        // Apply Search & Day Filters
+                        if (currentDayFilter !== 'All' && artist.date !== currentDayFilter) return;
+                        if (currentSearch && !artist.artist.toLowerCase().includes(currentSearch.toLowerCase())) return;
+
+                        const dateStr = artist.date; // e.g. "25 Aug"
+                        
+                        // Map key represents a unique column
+                        const colKey = `${dateStr}|${trackName}|${venueName}`;
+
+                        if (!columnsMap.has(colKey)) {
+                            columnsMap.set(colKey, {
+                                date: dateStr,
+                                track: trackName,
+                                venue: venueName,
+                                eventUrl: eventUrl,
+                                events: []
+                            });
+                        }
+
+                        // Time Parsing
+                        let sTime = artist.start_time;
+                        let eTime = artist.end_time;
+                        let sHour = 0, sMin = 0, eHour = 0, eMin = 0;
+                        let isUnknown = sTime.toLowerCase() === 'unknown';
+
+                        if (!isUnknown) {
+                            [sHour, sMin] = sTime.split(':').map(Number);
+                            [eHour, eMin] = eTime.split(':').map(Number);
+
+                            // Midnight logic (assume festival runs evening into next morning)
+                            if (sHour < 12) sHour += 24; 
+                            if (eHour < 12) eHour += 24;
+
+                            minHour = Math.min(minHour, sHour);
+                            maxHour = Math.max(maxHour, Math.ceil(eHour + (eMin > 0 ? 0.5 : 0)));
+                        }
+
+                        columnsMap.get(colKey).events.push({
+                            artist: artist.artist,
+                            profileUrl: artist.profile_url,
+                            date: dateStr,
+                            track: trackName,
+                            venue: venueName,
+                            startTime: sTime,
+                            endTime: eTime,
+                            sHour, sMin, eHour, eMin, isUnknown
+                        });
+                    });
+                }
+            });
+
+            // Adjust min/max bounds safely
+            if (minHour > maxHour) { minHour = 14; maxHour = 30; } 
+            else {
+                minHour = Math.max(0, minHour - 1); 
+                maxHour = maxHour + 1;
+            }
+
+            // 2. Sort columns by Date -> Track -> Venue
+            const sortedColumns = Array.from(columnsMap.values()).sort((a, b) => {
+                const timeA = parseDateHelper(a.date);
+                const timeB = parseDateHelper(b.date);
+                if (timeA !== timeB) return timeA - timeB;
+                if (a.track !== b.track) return a.track.localeCompare(b.track);
+                return a.venue.localeCompare(b.venue);
+            });
+
+            // 3. Create Hierarchical Header Groups (Date -> Track -> Venue)
+            const dateGroups = [];
+            let currentDayIndex = 0;
+
+            sortedColumns.forEach(col => {
+                let lastDate = dateGroups[dateGroups.length - 1];
+                
+                // New Date
+                if (!lastDate || lastDate.date !== col.date) {
+                    const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(new Date(parseDateHelper(col.date)));
+                    dateGroups.push({
+                        date: col.date,
+                        dayName: dayName,
+                        span: 1,
+                        bgColor: dayBgColors[currentDayIndex % dayBgColors.length],
+                        tracks: [{
+                            track: col.track,
+                            eventUrl: col.eventUrl,
+                            span: 1,
+                            venues: [col.venue]
+                        }]
+                    });
+                    currentDayIndex++;
+                } else {
+                    lastDate.span++;
+                    let lastTrack = lastDate.tracks[lastDate.tracks.length - 1];
+                    
+                    // New Track under existing date
+                    if (!lastTrack || lastTrack.track !== col.track) {
+                        lastDate.tracks.push({
+                            track: col.track,
+                            eventUrl: col.eventUrl,
+                            span: 1,
+                            venues: [col.venue]
+                        });
+                    } else {
+                        // Append venue to existing track
+                        lastTrack.span++;
+                        lastTrack.venues.push(col.venue);
+                    }
+                }
+            });
+
+            return { minHour, maxHour, sortedColumns, dateGroups };
+        }
+
+        function renderSchedule() {
+            const { minHour, maxHour, sortedColumns, dateGroups } = processData();
+            const container = document.getElementById('schedule-container');
+            
+            if (sortedColumns.length === 0) {
+                container.innerHTML = `<div class="flex items-center justify-center h-full text-slate-400 flex-col gap-3">
+                    <svg class="w-12 h-12 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p class="text-lg font-medium">No events found matching your criteria.</p>
+                </div>`;
+                return;
+            }
+
+            // Apply Zoom Levels dynamically
+            const colWidth = BASE_COL_WIDTH * zoomLevel;
+            const timeAxisWidth = BASE_TIME_AXIS_WIDTH; 
+            const pixelsPerHour = BASE_PIXELS_PER_HOUR * zoomLevel;
+
+            let html = `<div class="inline-block min-w-full">`;
+
+            // ==== HEADERS ====
+            html += `<div class="sticky top-0 z-40 flex flex-col shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]">`;
+
+            // Layer 1: Date Row
+            html += `<div class="flex border-b border-slate-700/80 bg-slate-900">
+                <div class="sticky left-0 w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] bg-slate-900 border-r border-slate-700/80 z-50"></div>`;
+            
+            dateGroups.forEach((dg, i) => {
+                const isLastDay = i === dateGroups.length - 1;
+                const borderClass = isLastDay ? 'border-r border-slate-700/80' : 'day-divider';
+                const w = dg.span * colWidth;
+                html += `
+                    <div class="py-3 text-center text-sm font-bold text-blue-400 uppercase tracking-widest ${borderClass} ${dg.bgColor}" style="width: ${w}px; min-width: ${w}px;">
+                        ${dg.dayName}, ${dg.date}
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            // Layer 2: Track Row
+            html += `<div class="flex border-b border-slate-700/80 bg-slate-900/95">
+                <div class="sticky left-0 w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] bg-slate-900 border-r border-slate-700/80 z-50"></div>`;
+            
+            dateGroups.forEach((dg, dIndex) => {
+                const isLastDay = dIndex === dateGroups.length - 1;
+                dg.tracks.forEach((tr, tIndex) => {
+                    const isLastTrackOfDay = tIndex === dg.tracks.length - 1;
+                    const applyStrongBorder = isLastTrackOfDay && !isLastDay;
+                    const borderClass = applyStrongBorder ? 'day-divider' : 'border-r border-slate-700/60';
+                    const w = tr.span * colWidth;
+                    
+                    html += `
+                        <div class="py-2 px-2 flex justify-center items-center ${borderClass} ${dg.bgColor}" style="width: ${w}px; min-width: ${w}px;">
+                            <a href="${tr.eventUrl}" target="_blank" class="text-xs font-semibold text-slate-300 hover:text-white hover:underline flex items-center gap-1 transition-colors bg-slate-800/50 px-3 py-1 rounded-full">
+                                ${tr.track}
+                                <svg class="w-3 h-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                        </div>
+                    `;
+                });
+            });
+            html += `</div>`;
+
+            // Layer 3: Venue Row
+            html += `<div class="flex border-b border-slate-700/80 bg-slate-900">
+                <div class="sticky left-0 w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] bg-slate-900 border-r border-slate-700/80 z-50 flex items-end justify-center pb-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">Time</div>`;
+            
+            dateGroups.forEach((dg, dIndex) => {
+                const isLastDay = dIndex === dateGroups.length - 1;
+                dg.tracks.forEach((tr, tIndex) => {
+                    const isLastTrackOfDay = tIndex === dg.tracks.length - 1;
+                    tr.venues.forEach((venue, vIndex) => {
+                        const isLastVenueOfTrack = vIndex === tr.venues.length - 1;
+                        const applyStrongBorder = isLastTrackOfDay && isLastVenueOfTrack && !isLastDay;
+                        const borderClass = applyStrongBorder ? 'day-divider' : 'border-r border-slate-700/50';
+                        
+                        html += `
+                            <div class="py-2.5 px-3 text-center text-xs font-medium text-slate-400 truncate flex items-center justify-center gap-1.5 ${borderClass} ${dg.bgColor}" style="width: ${colWidth}px; min-width: ${colWidth}px;" title="${venue}">
+                                <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span class="truncate">${venue}</span>
+                            </div>
+                        `;
+                    });
+                });
+            });
+            html += `</div></div>`; // End Headers
+
+            // ==== GRID BODY ====
+            const totalHeight = (maxHour - minHour) * pixelsPerHour;
+            html += `<div class="flex relative" style="height: ${totalHeight}px;">`;
+
+            // Y-Axis
+            html += `<div class="sticky left-0 w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] bg-slate-900 border-r border-slate-700/80 z-30 h-full">`;
+            for (let h = minHour; h < maxHour; h++) {
+                const displayHour = h > 24 ? h - 24 : h;
+                const ampm = h >= 24 ? 'AM' : (h >= 12 && h < 24 ? 'PM' : 'AM');
+                const formattedHour = displayHour > 12 ? displayHour - 12 : (displayHour === 0 ? 12 : displayHour);
+                const yPos = (h - minHour) * pixelsPerHour;
+                
+                html += `
+                    <div class="absolute w-full text-right pr-3 text-xs text-slate-500 font-semibold" style="top: ${yPos}px; transform: translateY(-50%);">
+                        ${formattedHour}:00 <span class="text-[9px] opacity-70">${ampm}</span>
+                    </div>
+                `;
+            }
+            html += `</div>`;
+
+            // Horizontal Grid Lines overlay
+            html += `<div class="absolute top-0 bottom-0 pointer-events-none z-10" style="left: ${timeAxisWidth}px; right: 0;">`;
+            for (let h = minHour; h < maxHour; h++) {
+                const yPos = (h - minHour) * pixelsPerHour;
+                html += `<div class="absolute w-full border-t border-slate-700/40" style="top: ${yPos}px;"></div>`;
+                html += `<div class="absolute w-full border-t border-slate-800/40 border-dashed" style="top: ${yPos + (pixelsPerHour/2)}px;"></div>`;
+            }
+            html += `</div>`;
+
+            // Columns and Events
+            let globalColIndex = 0;
+            dateGroups.forEach((dg, dIndex) => {
+                const isLastDay = dIndex === dateGroups.length - 1;
+                dg.tracks.forEach((tr, tIndex) => {
+                    const isLastTrackOfDay = tIndex === dg.tracks.length - 1;
+                    tr.venues.forEach((venue, vIndex) => {
+                        const isLastVenueOfTrack = vIndex === tr.venues.length - 1;
+                        const applyStrongBorder = isLastTrackOfDay && isLastVenueOfTrack && !isLastDay;
+                        const borderClass = applyStrongBorder ? 'day-divider' : 'border-r border-slate-800/60';
+                        const colData = sortedColumns[globalColIndex];
+                        
+                        html += `<div class="relative h-full ${borderClass} ${dg.bgColor}" style="width: ${colWidth}px; min-width: ${colWidth}px;">`;
+
+                        // Render Unknown Times Stacked at the top
+                        let unknownOffset = 10;
+                        colData.events.forEach(ev => {
+                            if (ev.isUnknown) {
+                                const height = 45;
+                                const safeJson = JSON.stringify(ev).replace(/'/g, "&apos;").replace(/"/g, '&quot;');
+                                const style = getTrackColor(ev.track);
+                                
+                                html += `
+                                    <div class="absolute w-full p-1.5 z-20 transition-all hover:scale-105 hover:z-30 cursor-pointer" 
+                                         style="top: ${unknownOffset}px; height: ${height}px;"
+                                         onclick="openModal('${safeJson}')">
+                                        <div class="h-full w-full rounded-md px-3 py-1 flex flex-col justify-center overflow-hidden border border-dashed ${style}">
+                                            <span class="font-bold text-sm truncate leading-tight">${ev.artist}</span>
+                                            <span class="text-[10px] opacity-80 mt-0.5">Time TBA</span>
+                                        </div>
+                                    </div>
+                                `;
+                                unknownOffset += (height + 5);
+                            }
+                        });
+
+                        // Render Known Times
+                        colData.events.forEach(ev => {
+                            if (!ev.isUnknown) {
+                                const top = (ev.sHour - minHour + (ev.sMin / 60)) * pixelsPerHour;
+                                const height = ((ev.eHour - ev.sHour) + (ev.eMin - ev.sMin) / 60) * pixelsPerHour;
+                                const safeJson = JSON.stringify(ev).replace(/'/g, "&apos;").replace(/"/g, '&quot;');
+                                const style = getTrackColor(ev.track);
+                                
+                                html += `
+                                    <div class="absolute w-full p-1.5 z-20 transition-all hover:scale-[1.03] hover:z-30 cursor-pointer" 
+                                         style="top: ${top}px; height: ${height}px;"
+                                         onclick="openModal('${safeJson}')">
+                                        <div class="h-full w-full rounded-md p-3 flex flex-col overflow-hidden relative group ${style}">
+                                            <!-- Decorative Left Bar -->
+                                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-white/20"></div>
+                                            
+                                            <span class="font-bold text-base truncate leading-snug ml-1 group-hover:text-white transition-colors">${ev.artist}</span>
+                                            <span class="text-xs opacity-80 mt-1 ml-1 font-medium tracking-wide">${ev.startTime} – ${ev.endTime}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+
+                        html += `</div>`;
+                        globalColIndex++;
+                    });
+                });
+            });
+
+            html += `</div></div>`; // End Grid Body & Inner wrapper
+            container.innerHTML = html;
+        }
+
+        function openModal(eventJsonStr) {
+            const ev = JSON.parse(eventJsonStr);
+            
+            document.getElementById('modal-artist').textContent = ev.artist;
+            document.getElementById('modal-track').textContent = ev.track;
+            document.getElementById('modal-date').textContent = ev.date + ', 2026';
+            document.getElementById('modal-time').textContent = ev.isUnknown ? 'Time to be announced' : `${ev.startTime} - ${ev.endTime}`;
+            document.getElementById('modal-venue').textContent = ev.venue;
+            
+            const profileBtn = document.getElementById('modal-profile-link');
+            if (ev.profileUrl && ev.profileUrl !== "#") {
+                profileBtn.href = ev.profileUrl;
+                profileBtn.style.display = 'flex';
+            } else {
+                profileBtn.style.display = 'none';
+            }
+
+            const modal = document.getElementById('event-modal');
+            const content = document.getElementById('modal-content');
+            
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+            
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('event-modal');
+            const content = document.getElementById('modal-content');
+            
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); // match transition duration
+        }
+
+        // Close modal on outside click
+        document.getElementById('event-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // --- New Features: Filters & Zoom ---
+        
+        // Helper function extracted globally to share sorting logic
+        const parseDateHelper = (dStr) => {
+            const [day, mon] = dStr.split(' ');
+            const months = {Aug: 7, Sep: 8};
+            return new Date(2026, months[mon] || 7, parseInt(day)).getTime();
+        };
+
+        function initControls() {
+            // Setup Day Filters dynamically from data
+            const daysSet = new Set();
+            rawData.forEach(eg => {
+                for (const v in eg.structured_schedule) {
+                    eg.structured_schedule[v].artists.forEach(a => daysSet.add(a.date));
+                }
+            });
+            const days = Array.from(daysSet).sort((a, b) => parseDateHelper(a) - parseDateHelper(b));
+            
+            const filterContainer = document.getElementById('day-filters');
+            
+            // Generate "All" Button
+            const allBtn = document.createElement('button');
+            allBtn.className = `px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${currentDayFilter === 'All' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`;
+            allBtn.textContent = 'All Days';
+            allBtn.onclick = () => { currentDayFilter = 'All'; updateFilters(); };
+            filterContainer.appendChild(allBtn);
+
+            // Generate Individual Day Buttons
+            days.forEach(day => {
+                const dayBtn = document.createElement('button');
+                dayBtn.className = `px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${currentDayFilter === day ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`;
+                dayBtn.textContent = day;
+                dayBtn.onclick = () => { currentDayFilter = day; updateFilters(); };
+                filterContainer.appendChild(dayBtn);
+            });
+
+            // Hook up Search Input
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                renderSchedule();
+            });
+
+            // Hook up Zoom Controls
+            document.getElementById('zoom-in').addEventListener('click', () => {
+                zoomLevel = Math.min(2.0, zoomLevel + 0.1);
+                updateZoomDisplay();
+                renderSchedule();
+            });
+            
+            document.getElementById('zoom-out').addEventListener('click', () => {
+                zoomLevel = Math.max(0.5, zoomLevel - 0.1);
+                updateZoomDisplay();
+                renderSchedule();
+            });
+        }
+
+        function updateFilters() {
+            // Re-render button visual states after clicking
+            const filterContainer = document.getElementById('day-filters');
+            Array.from(filterContainer.children).forEach(btn => {
+                const isMatch = btn.textContent === currentDayFilter || (btn.textContent === 'All Days' && currentDayFilter === 'All');
+                btn.className = `px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${isMatch ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`;
+            });
+            renderSchedule();
+        }
+
+        function updateZoomDisplay() {
+            document.getElementById('zoom-display').textContent = Math.round(zoomLevel * 100) + '%';
+        }
+
+        // Initialize application controls and render
+        document.addEventListener('DOMContentLoaded', () => {
+            initControls();
+            renderSchedule();
+        });
+    </script>
+</body>
+</html>
