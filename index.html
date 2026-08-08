@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory Index</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .file-list-item:hover {
+            background-color: #e5e7eb;
+        }
+        .icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+            margin-right: 12px;
+        }
+        .folder-icon { color: #3b82f6; }
+        .file-icon { color: #6b7280; }
+        .html-icon { color: #e34c26; }
+        .js-icon { color: #f7df1e; }
+        .css-icon { color: #264de4; }
+        .py-icon { color: #3776ab; }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+
+    <main class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <header class="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <h1 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                <span id="repo-title">Loading Repository...</span>
+            </h1>
+            <div id="path-breadcrumbs" class="text-sm text-gray-500 font-mono flex items-center flex-wrap gap-1">
+                <!-- Breadcrumbs will be generated here -->
+            </div>
+        </header>
+
+        <div id="file-list-container" class="p-0">
+            <ul id="file-list" class="divide-y divide-gray-200">
+                <li class="px-6 py-8 text-center text-gray-500" id="loading-state">
+                    <svg class="animate-spin h-8 w-8 mx-auto mb-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Fetching directory contents...
+                </li>
+            </ul>
+        </div>
+        
+        <footer class="bg-gray-50 px-6 py-3 border-t border-gray-200 text-xs text-gray-400 text-center">
+            Auto-generated directory index via GitHub API
+        </footer>
+    </main>
+
+    <script>
+        /**
+         * CONFIGURATION
+         * 
+         * Important: For this to work on GitHub Pages, we need to know the repository details.
+         * If the URL is `https://username.github.io/reponame/`, we can try to extract it automatically.
+         * However, setting them manually here is the most robust method, especially for testing locally.
+         */
+        const CONFIG = {
+            // Replace these with your actual GitHub username and repository name
+            // e.g., username: 'torvalds', repo: 'linux'
+            username: 'YOUR_GITHUB_USERNAME', 
+            repo: 'YOUR_REPOSITORY_NAME',
+            
+            // Optional: The branch to fetch contents from (usually 'main', 'master', or 'gh-pages')
+            branch: 'main',
+
+            // Optional: Starting path inside the repo (leave empty string '' for root)
+            // e.g., 'docs' or 'public/assets'
+            basePath: '' 
+        };
+
+        // SVG Icon Helpers
+        const ICONS = {
+            folder: `<svg class="icon folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
+            file: `<svg class="icon file-icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`,
+            html: `<svg class="icon html-icon" viewBox="0 0 24 24"><path d="M12 15.39l-3.06-.88-.23-2.58h-2.1l.36 4.39 5.03 1.39 5.03-1.39.4-4.39H15.3l-.24 2.58L12 15.39zM17.48 9H6.18l-.2-2.11h11.7l-.2 2.11z"/><path d="M2.06 1L4 23l8 2 8-2 1.94-22H2.06zm17.65 20.35l-7.71 1.92-7.71-1.92L2.73 3h18.53l-1.55 18.35z"/></svg>`,
+            js: `<svg class="icon js-icon" viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm11.36 12.39c-.58-.3-1.04-.7-1.35-1.2l1.64-1.04c.22.36.49.62.82.78.33.16.71.24 1.14.24.46 0 .84-.1 1.13-.3.29-.2.44-.48.44-.82 0-.27-.1-.5-.31-.69-.21-.19-.63-.4-1.25-.63-.8-.3-1.42-.62-1.85-.94-.43-.32-.73-.7-.91-1.12-.17-.42-.26-.91-.26-1.46 0-.74.24-1.35.73-1.81.49-.46 1.23-.69 2.21-.69 1.11 0 1.95.28 2.53.84.58.55.93 1.24 1.05 2.05l-1.63.56c-.05-.44-.22-.79-.5-.1-.29-.26-.73-.4-1.34-.4-.44 0-.79.1-1.04.31-.25.21-.38.5-.38.86 0 .28.1.51.3.69.2.18.66.41 1.38.69.75.29 1.33.6 1.74.93.41.33.7.71.86 1.12.16.42.24.91.24 1.48 0 .76-.26 1.4-.78 1.91-.52.51-1.27.76-2.25.76-1.04 0-1.88-.27-2.52-.8zM7.5 18.52c-.79 0-1.43-.2-1.9-.59-.48-.39-.78-1-.9-1.82l1.7-.56c.07.47.24.81.5 1.02.27.21.65.31 1.15.31.55 0 .97-.13 1.27-.4.3-.26.45-.63.45-1.11V8.41h1.96v7c0 1-.29 1.76-.88 2.29-.59.53-1.44.82-2.55.82z"/></svg>`,
+            css: `<svg class="icon css-icon" viewBox="0 0 24 24"><path d="M5.04 1L3 23l9 2 9-2L18.96 1H5.04zm12.3 20.24l-8.34 2.1-8.34-2.1L3.25 3h17.5l-1.41 18.24zM7.17 9.88l.19-2.2h9.28l.22-2.3H5.07l-.63 6.9h8.33l-.22 2.6-4.55 1.28-4.55-1.28-.15-1.8H1.05l.34 3.79 6.61 1.83 6.61-1.83.62-6.99H7.17z"/></svg>`,
+            py: `<svg class="icon py-icon" viewBox="0 0 24 24"><path d="M12.01 2c-3.13 0-5.73.57-5.73.57S4.1 3.1 4.1 6.55v2.85h7.91v1.14H3.88s-2.07-.06-2.07 3.38v2.86c0 3.44 1.91 3.52 1.91 3.52s2.61.64 5.92.64 5.96-.64 5.96-.64 2.12-.13 2.12-3.52v-2.86c0-3.44-2.12-3.38-2.12-3.38h-7.61v-1.14h8.12s2.21-.06 2.21-3.48V6.55c0-3.45-2.18-3.98-2.18-3.98s-2.6-.57-5.73-.57zm-2.8 1.63c.53 0 .97.43.97.97 0 .53-.44.97-.97.97-.53 0-.96-.44-.96-.97 0-.54.43-.97.96-.97zm5.55 14.8c-.53 0-.97-.43-.97-.97 0-.53.44-.97.97-.97.53 0 .97.44.97.97 0 .54-.44.97-.97.97z"/></svg>`,
+            image: `<svg class="icon text-purple-500" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>`
+        };
+
+        function getIconForFile(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (ext === 'html' || ext === 'htm') return ICONS.html;
+            if (ext === 'js' || ext === 'ts') return ICONS.js;
+            if (ext === 'css') return ICONS.css;
+            if (ext === 'py') return ICONS.py;
+            if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) return ICONS.image;
+            return ICONS.file;
+        }
+
+        function autoDetectConfig() {
+            // Attempt to guess username and repo from the URL if we are hosted on github.io
+            const host = window.location.hostname;
+            const path = window.location.pathname;
+            
+            if (host.endsWith('.github.io')) {
+                const username = host.split('.')[0];
+                const pathParts = path.split('/').filter(p => p.length > 0);
+                
+                // If there's a path part, it's likely the repo name
+                const repo = pathParts.length > 0 ? pathParts[0] : `${username}.github.io`;
+                
+                // Only override if the config was left as default
+                if (CONFIG.username === 'YOUR_GITHUB_USERNAME') {
+                    CONFIG.username = username;
+                    CONFIG.repo = repo;
+                    console.log(`Auto-detected GitHub context: ${username}/${repo}`);
+                }
+            }
+        }
+
+        async function fetchDirectoryContents(path = '') {
+            autoDetectConfig();
+
+            const { username, repo, branch } = CONFIG;
+            
+            if (username === 'YOUR_GITHUB_USERNAME') {
+                showError("Please update the CONFIG object in the HTML file with your GitHub username and repository name, or view this file hosted on github.io.");
+                return;
+            }
+
+            const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}?ref=${branch}`;
+            const titleEl = document.getElementById('repo-title');
+            titleEl.textContent = `${username} / ${repo}`;
+
+            updateBreadcrumbs(path);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(`Directory not found. (Status 404). Ensure the path exists and the repository is public.`);
+                    } else if (response.status === 403) {
+                        throw new Error(`API rate limit exceeded. (Status 403). Try again later.`);
+                    }
+                    throw new Error(`Failed to fetch contents: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                renderFileList(data, path);
+
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function renderFileList(contents, currentPath) {
+            const listEl = document.getElementById('file-list');
+            listEl.innerHTML = '';
+
+            // Sort: Directories first, then files, alphabetically
+            contents.sort((a, b) => {
+                if (a.type === 'dir' && b.type === 'file') return -1;
+                if (a.type === 'file' && b.type === 'dir') return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            // Add "Go up" button if not in root
+            if (currentPath !== '' && currentPath !== CONFIG.basePath) {
+                const parentPath = currentPath.split('/').slice(0, -1).join('/');
+                const li = document.createElement('li');
+                li.className = 'file-list-item cursor-pointer px-6 py-4 flex items-center transition-colors duration-150 ease-in-out';
+                li.onclick = () => fetchDirectoryContents(parentPath);
+                li.innerHTML = `
+                    <svg class="icon text-gray-400" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    <span class="font-medium text-gray-700">.. (Parent Directory)</span>
+                `;
+                listEl.appendChild(li);
+            }
+
+            if (contents.length === 0) {
+                listEl.innerHTML = '<li class="px-6 py-8 text-center text-gray-500">This directory is empty.</li>';
+                return;
+            }
+
+            contents.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'file-list-item px-6 py-3 flex items-center justify-between transition-colors duration-150 ease-in-out border-b border-gray-100 last:border-0';
+                
+                const leftContainer = document.createElement('div');
+                leftContainer.className = 'flex items-center flex-1 min-w-0';
+
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'flex-shrink-0';
+                
+                const nameLink = document.createElement('a');
+                nameLink.className = 'text-gray-800 font-medium truncate ml-2 hover:text-blue-600 focus:outline-none focus:underline';
+                nameLink.textContent = item.name;
+
+                if (item.type === 'dir') {
+                    iconSpan.innerHTML = ICONS.folder;
+                    nameLink.href = `#${item.path}`;
+                    // Handle directory navigation via JS instead of just relying on hash
+                    nameLink.onclick = (e) => {
+                        e.preventDefault();
+                        window.history.pushState(null, '', `#${item.path}`);
+                        fetchDirectoryContents(item.path);
+                    };
+                } else {
+                    iconSpan.innerHTML = getIconForFile(item.name);
+                    // For files, point directly to the GitHub Pages hosted version
+                    // Construct the absolute URL based on current host context if possible
+                    nameLink.href = item.path; 
+                    nameLink.target = '_blank';
+                    nameLink.rel = 'noopener noreferrer';
+                }
+
+                leftContainer.appendChild(iconSpan);
+                leftContainer.appendChild(nameLink);
+
+                // Add size for files
+                const sizeSpan = document.createElement('span');
+                sizeSpan.className = 'text-xs text-gray-400 font-mono ml-4 flex-shrink-0';
+                if (item.type === 'file') {
+                    sizeSpan.textContent = formatBytes(item.size);
+                }
+
+                li.appendChild(leftContainer);
+                li.appendChild(sizeSpan);
+                listEl.appendChild(li);
+            });
+        }
+
+        function updateBreadcrumbs(path) {
+            const breadcrumbEl = document.getElementById('path-breadcrumbs');
+            breadcrumbEl.innerHTML = '';
+            
+            const rootLink = document.createElement('a');
+            rootLink.href = '#';
+            rootLink.className = 'hover:text-blue-600 cursor-pointer';
+            rootLink.textContent = '~';
+            rootLink.onclick = (e) => {
+                e.preventDefault();
+                window.history.pushState(null, '', '#');
+                fetchDirectoryContents(CONFIG.basePath);
+            };
+            breadcrumbEl.appendChild(rootLink);
+
+            if (path) {
+                const parts = path.split('/');
+                let cumulativePath = '';
+                
+                parts.forEach((part, index) => {
+                    const separator = document.createElement('span');
+                    separator.textContent = ' / ';
+                    separator.className = 'text-gray-300 px-1';
+                    breadcrumbEl.appendChild(separator);
+
+                    cumulativePath += (index === 0 ? '' : '/') + part;
+                    
+                    const partLink = document.createElement('a');
+                    partLink.href = `#${cumulativePath}`;
+                    partLink.className = 'hover:text-blue-600 cursor-pointer';
+                    partLink.textContent = part;
+                    
+                    const p = cumulativePath; // Closure capture
+                    partLink.onclick = (e) => {
+                        e.preventDefault();
+                        window.history.pushState(null, '', `#${p}`);
+                        fetchDirectoryContents(p);
+                    };
+                    
+                    breadcrumbEl.appendChild(partLink);
+                });
+            }
+        }
+
+        function showError(message) {
+            const listEl = document.getElementById('file-list');
+            listEl.innerHTML = `
+                <li class="px-6 py-8 text-center">
+                    <div class="text-red-500 mb-2">
+                        <svg class="h-10 w-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Error Loading Contents</h3>
+                    <p class="mt-1 text-sm text-gray-500">${message}</p>
+                </li>
+            `;
+        }
+
+        function formatBytes(bytes, decimals = 1) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if there's a path in the URL hash (e.g., index.html#docs/css)
+            let initialPath = CONFIG.basePath;
+            if (window.location.hash && window.location.hash.length > 1) {
+                initialPath = window.location.hash.substring(1); // Remove the '#'
+            }
+            
+            fetchDirectoryContents(initialPath);
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', () => {
+            let path = CONFIG.basePath;
+            if (window.location.hash && window.location.hash.length > 1) {
+                path = window.location.hash.substring(1);
+            }
+            fetchDirectoryContents(path);
+        });
+    </script>
+</body>
+</html>
