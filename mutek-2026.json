@@ -1,0 +1,809 @@
+[
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/experience-1",
+        "structured_schedule": {
+            "Esplanade Tranquille": {
+                "program_track": "EXPÉRIENCE 1",
+                "artists": [
+                    {
+                        "artist": "Ida Toninato",
+                        "profile_url": "https://montreal.mutek.org/en/artists/ida-toninato",
+                        "date": "25 Aug",
+                        "start_time": "18:30",
+                        "end_time": "19:05"
+                    },
+                    {
+                        "artist": "Pick a Piper",
+                        "profile_url": "https://montreal.mutek.org/en/artists/pick-a-piper",
+                        "date": "25 Aug",
+                        "start_time": "19:15",
+                        "end_time": "20:00"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/experience-2",
+        "structured_schedule": {
+            "Esplanade Tranquille": {
+                "program_track": "EXPÉRIENCE 2",
+                "artists": [
+                    {
+                        "artist": "16:9 ratio",
+                        "profile_url": "https://montreal.mutek.org/en/artists/169-ratio",
+                        "date": "26 Aug",
+                        "start_time": "17:00",
+                        "end_time": "18:00"
+                    },
+                    {
+                        "artist": "dustbunny",
+                        "profile_url": "https://montreal.mutek.org/en/artists/dustbunny",
+                        "date": "26 Aug",
+                        "start_time": "18:05",
+                        "end_time": "18:35"
+                    },
+                    {
+                        "artist": "NGL Flounce",
+                        "profile_url": "https://montreal.mutek.org/en/artists/ngl-flounce",
+                        "date": "26 Aug",
+                        "start_time": "18:40",
+                        "end_time": "19:25"
+                    },
+                    {
+                        "artist": "jamvvis",
+                        "profile_url": "https://montreal.mutek.org/en/artists/jamvvis-yfbob",
+                        "date": "26 Aug",
+                        "start_time": "19:35",
+                        "end_time": "20:20"
+                    },
+                    {
+                        "artist": "NVST",
+                        "profile_url": "https://montreal.mutek.org/en/artists/nvst",
+                        "date": "26 Aug",
+                        "start_time": "20:30",
+                        "end_time": "21:20"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-1",
+        "structured_schedule": {
+            "Satosphère": {
+                "program_track": "NOCTURNE 1",
+                "artists": [
+                    {
+                        "artist": "Weidi Zhang & Weilu Ge",
+                        "profile_url": "https://montreal.mutek.org/en/artists/weidi-zhang-weilu-ge",
+                        "date": "26 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    },
+                    {
+                        "artist": "mesocosm",
+                        "profile_url": "https://montreal.mutek.org/en/artists/mesocosm",
+                        "date": "26 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    },
+                    {
+                        "artist": "Guillaume Coutu Dumont & Line Katcho",
+                        "profile_url": "https://montreal.mutek.org/en/artists/guillaume-coutu-dumont-line-katcho",
+                        "date": "26 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    },
+                    {
+                        "artist": "France Jobin & Markus Heckmann",
+                        "profile_url": "https://montreal.mutek.org/en/artists/france-jobin",
+                        "date": "26 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    }
+                ]
+            },
+            "Espace SAT": {
+                "program_track": "NOCTURNE 1",
+                "artists": [
+                    {
+                        "artist": "Marc-Antoine Barbier",
+                        "profile_url": "https://montreal.mutek.org/en/artists/marc-antoine-barbier",
+                        "date": "26 Aug",
+                        "start_time": "22:30",
+                        "end_time": "23:15"
+                    },
+                    {
+                        "artist": "Debit",
+                        "profile_url": "https://montreal.mutek.org/en/artists/debit",
+                        "date": "26 Aug",
+                        "start_time": "23:20",
+                        "end_time": "00:10"
+                    },
+                    {
+                        "artist": "Matthew Herbert",
+                        "profile_url": "https://montreal.mutek.org/en/artists/matthew-herbert",
+                        "date": "26 Aug",
+                        "start_time": "00:20",
+                        "end_time": "01:20"
+                    },
+                    {
+                        "artist": "Barker",
+                        "profile_url": "https://montreal.mutek.org/en/artists/barker",
+                        "date": "26 Aug",
+                        "start_time": "01:30",
+                        "end_time": "02:30"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/experience-3",
+        "structured_schedule": {
+            "Esplanade Tranquille": {
+                "program_track": "EXPÉRIENCE 3",
+                "artists": [
+                    {
+                        "artist": "Abulzooz",
+                        "profile_url": "https://montreal.mutek.org/en/artists/zaid-bustami",
+                        "date": "27 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    },
+                    {
+                        "artist": "wetdogg",
+                        "profile_url": "https://montreal.mutek.org/en/artists/wetdogg",
+                        "date": "27 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    },
+                    {
+                        "artist": "Monsieurmadam",
+                        "profile_url": "https://montreal.mutek.org/en/artists/monsieurmadam",
+                        "date": "27 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    },
+                    {
+                        "artist": "WAWA",
+                        "profile_url": "https://montreal.mutek.org/en/artists/wawa",
+                        "date": "27 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    },
+                    {
+                        "artist": "Istanbul Ghetto Club",
+                        "profile_url": "https://montreal.mutek.org/en/artists/istanbul-ghetto-club",
+                        "date": "27 Aug",
+                        "start_time": "Unknown",
+                        "end_time": "Unknown"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-1",
+        "structured_schedule": {
+            "Maison symphonique": {
+                "program_track": "X/VISIONS 1",
+                "artists": [
+                    {
+                        "artist": "Kara-Lis Coverdale",
+                        "profile_url": "https://montreal.mutek.org/en/artists/kara-lis-coverdale",
+                        "date": "27 Aug",
+                        "start_time": "19:00",
+                        "end_time": "19:55"
+                    },
+                    {
+                        "artist": "Kali Malone",
+                        "profile_url": "https://montreal.mutek.org/en/artists/kali-malone",
+                        "date": "27 Aug",
+                        "start_time": "20:15",
+                        "end_time": "21:15"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-2",
+        "structured_schedule": {
+            "Satosphère": {
+                "program_track": "NOCTURNE 2",
+                "artists": [
+                    {
+                        "artist": "Nelly-Eve Rajotte",
+                        "profile_url": "https://montreal.mutek.org/en/artists/nelly-eve-rajotte",
+                        "date": "27 Aug",
+                        "start_time": "22:30",
+                        "end_time": "23:00"
+                    },
+                    {
+                        "artist": "MOORE + SALAS",
+                        "profile_url": "https://montreal.mutek.org/en/artists/moore-salas",
+                        "date": "27 Aug",
+                        "start_time": "23:20",
+                        "end_time": "00:05"
+                    },
+                    {
+                        "artist": "Arbor and Tzu Ni",
+                        "profile_url": "https://montreal.mutek.org/en/artists/arbor-and-tzu-ni",
+                        "date": "27 Aug",
+                        "start_time": "00:40",
+                        "end_time": "01:10"
+                    },
+                    {
+                        "artist": "Korea Town Acid & Ajeebsir",
+                        "profile_url": "https://montreal.mutek.org/en/artists/korea-town-acid-ajeebsir",
+                        "date": "27 Aug",
+                        "start_time": "01:30",
+                        "end_time": "02:30"
+                    }
+                ]
+            },
+            "Espace SAT": {
+                "program_track": "NOCTURNE 2",
+                "artists": [
+                    {
+                        "artist": "Noémi Büchi",
+                        "profile_url": "https://montreal.mutek.org/en/artists/noemi-buchi",
+                        "date": "27 Aug",
+                        "start_time": "22:45",
+                        "end_time": "23:35"
+                    },
+                    {
+                        "artist": "ELECTRONICOS FANTASTICOS!",
+                        "profile_url": "https://montreal.mutek.org/en/artists/electronicos-fantasticos",
+                        "date": "27 Aug",
+                        "start_time": "23:50",
+                        "end_time": "00:50"
+                    },
+                    {
+                        "artist": "Zora Jones",
+                        "profile_url": "https://montreal.mutek.org/en/artists/zora-jones",
+                        "date": "27 Aug",
+                        "start_time": "01:05",
+                        "end_time": "02:05"
+                    },
+                    {
+                        "artist": "Jump Source",
+                        "profile_url": "https://montreal.mutek.org/en/artists/jump-source",
+                        "date": "27 Aug",
+                        "start_time": "02:10",
+                        "end_time": "03:40"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/experience-4",
+        "structured_schedule": {
+            "Esplanade Tranquille": {
+                "program_track": "EXPÉRIENCE 4",
+                "artists": [
+                    {
+                        "artist": "Vivian Li",
+                        "profile_url": "https://montreal.mutek.org/en/artists/vivian-li",
+                        "date": "28 Aug",
+                        "start_time": "17:00",
+                        "end_time": "17:55"
+                    },
+                    {
+                        "artist": "ArtSaves",
+                        "profile_url": "https://montreal.mutek.org/en/artists/artsaves",
+                        "date": "28 Aug",
+                        "start_time": "18:00",
+                        "end_time": "18:40"
+                    },
+                    {
+                        "artist": "aria",
+                        "profile_url": "https://montreal.mutek.org/en/artists/aria",
+                        "date": "28 Aug",
+                        "start_time": "19:40",
+                        "end_time": "21:00"
+                    },
+                    {
+                        "artist": "Matt & Mark Thibideau",
+                        "profile_url": "https://montreal.mutek.org/en/artists/matt-mark-thibideau",
+                        "date": "28 Aug",
+                        "start_time": "21:10",
+                        "end_time": "22:10"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-2",
+        "structured_schedule": {
+            "Maison symphonique": {
+                "program_track": "X/VISIONS 2",
+                "artists": [
+                    {
+                        "artist": "Tristan Perich & James McVinnie",
+                        "profile_url": "https://montreal.mutek.org/en/artists/tristan-perich-james-mcvinnie",
+                        "date": "28 Aug",
+                        "start_time": "19:00",
+                        "end_time": "20:03"
+                    },
+                    {
+                        "artist": "Voices From The Lake",
+                        "profile_url": "https://montreal.mutek.org/en/artists/voices-from-the-lake",
+                        "date": "28 Aug",
+                        "start_time": "20:28",
+                        "end_time": "21:58"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/metropolis-1",
+        "structured_schedule": {
+            "MTELUS": {
+                "program_track": "MÉTROPOLIS 1",
+                "artists": [
+                    {
+                        "artist": "Cleo Leigh",
+                        "profile_url": "https://montreal.mutek.org/en/artists/cleo-leigh",
+                        "date": "28 Aug",
+                        "start_time": "23:00",
+                        "end_time": "00:00"
+                    },
+                    {
+                        "artist": "Polygonia",
+                        "profile_url": "https://montreal.mutek.org/en/artists/polygonia",
+                        "date": "28 Aug",
+                        "start_time": "00:05",
+                        "end_time": "01:05"
+                    },
+                    {
+                        "artist": "JakoJako",
+                        "profile_url": "https://montreal.mutek.org/en/artists/jakojako",
+                        "date": "28 Aug",
+                        "start_time": "01:10",
+                        "end_time": "02:10"
+                    },
+                    {
+                        "artist": "Jeff Mills",
+                        "profile_url": "https://montreal.mutek.org/en/artists/jeff-mills",
+                        "date": "28 Aug",
+                        "start_time": "02:15",
+                        "end_time": "04:35"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-3",
+        "structured_schedule": {
+            "Satoshpère": {
+                "program_track": "NOCTURNE 3",
+                "artists": [
+                    {
+                        "artist": "Florence-Delphine Roux",
+                        "profile_url": "https://montreal.mutek.org/en/artists/florence-delphine-roux",
+                        "date": "28 Aug",
+                        "start_time": "22:30",
+                        "end_time": "23:00"
+                    },
+                    {
+                        "artist": "Hermanos Riffo Gómez",
+                        "profile_url": "https://montreal.mutek.org/en/artists/hermanos-riffo-gomez",
+                        "date": "28 Aug",
+                        "start_time": "23:15",
+                        "end_time": "00:00"
+                    },
+                    {
+                        "artist": "Elsewhere in India ft. Murthovic & Thiruda",
+                        "profile_url": "https://montreal.mutek.org/en/artists/elsewhere-in-india-ft-murthovic-thiruda",
+                        "date": "28 Aug",
+                        "start_time": "00:15",
+                        "end_time": "01:00"
+                    },
+                    {
+                        "artist": "Cheng Daoyuan & Huang Wei",
+                        "profile_url": "https://montreal.mutek.org/en/artists/cheng-daoyuan-huang-wei",
+                        "date": "28 Aug",
+                        "start_time": "01:15",
+                        "end_time": "01:40"
+                    }
+                ]
+            },
+            "Espace SAT": {
+                "program_track": "NOCTURNE 3",
+                "artists": [
+                    {
+                        "artist": "Sara Persico & Mika Oki",
+                        "profile_url": "https://montreal.mutek.org/en/artists/sara-persico-mika-oki",
+                        "date": "28 Aug",
+                        "start_time": "22:45",
+                        "end_time": "23:30"
+                    },
+                    {
+                        "artist": "Honeydrip",
+                        "profile_url": "https://montreal.mutek.org/en/artists/honeydrip",
+                        "date": "28 Aug",
+                        "start_time": "23:40",
+                        "end_time": "00:25"
+                    },
+                    {
+                        "artist": "Mia Koden",
+                        "profile_url": "https://montreal.mutek.org/en/artists/mia-koden",
+                        "date": "28 Aug",
+                        "start_time": "00:30",
+                        "end_time": "01:30"
+                    },
+                    {
+                        "artist": "gyrofield",
+                        "profile_url": "https://montreal.mutek.org/en/artists/gyrofield",
+                        "date": "28 Aug",
+                        "start_time": "01:35",
+                        "end_time": "02:35"
+                    },
+                    {
+                        "artist": "A Guy Called Gerald",
+                        "profile_url": "https://montreal.mutek.org/en/artists/a-guy-called-gerald",
+                        "date": "28 Aug",
+                        "start_time": "02:40",
+                        "end_time": "03:40"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/play-1",
+        "structured_schedule": {
+            "Studio-Théâtre des Grands Ballets": {
+                "program_track": "PLAY 1",
+                "artists": [
+                    {
+                        "artist": "Estelle Schorpp & charline dally",
+                        "profile_url": "https://montreal.mutek.org/en/artists/estelle-schorpp-charline-dally",
+                        "date": "29 Aug",
+                        "start_time": "15:00",
+                        "end_time": "15:30"
+                    },
+                    {
+                        "artist": "pliq",
+                        "profile_url": "https://montreal.mutek.org/en/artists/pliq",
+                        "date": "29 Aug",
+                        "start_time": "15:40",
+                        "end_time": "16:20"
+                    },
+                    {
+                        "artist": "JS Baillat & Mateo Murphy",
+                        "profile_url": "https://montreal.mutek.org/en/artists/js-baillat-mateo-murphy",
+                        "date": "29 Aug",
+                        "start_time": "16:30",
+                        "end_time": "17:10"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/experience-5",
+        "structured_schedule": {
+            "Esplanade Tranquille": {
+                "program_track": "EXPÉRIENCE 5",
+                "artists": [
+                    {
+                        "artist": "shn shn",
+                        "profile_url": "https://montreal.mutek.org/en/artists/shn-shn",
+                        "date": "29 Aug",
+                        "start_time": "17:00",
+                        "end_time": "17:40"
+                    },
+                    {
+                        "artist": "Marie Delprat",
+                        "profile_url": "https://montreal.mutek.org/en/artists/marie-delprat",
+                        "date": "29 Aug",
+                        "start_time": "17:45",
+                        "end_time": "18:25"
+                    },
+                    {
+                        "artist": "Measure",
+                        "profile_url": "https://montreal.mutek.org/en/artists/measure",
+                        "date": "29 Aug",
+                        "start_time": "18:30",
+                        "end_time": "19:15"
+                    },
+                    {
+                        "artist": "chiquitamagic",
+                        "profile_url": "https://montreal.mutek.org/en/artists/chiquitamagic",
+                        "date": "29 Aug",
+                        "start_time": "19:20",
+                        "end_time": "20:20"
+                    },
+                    {
+                        "artist": "Hot Sleepers",
+                        "profile_url": "https://montreal.mutek.org/en/artists/hot-sleepers",
+                        "date": "29 Aug",
+                        "start_time": "20:25",
+                        "end_time": "21:55"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/x-visions-3",
+        "structured_schedule": {
+            "Maison symphonique": {
+                "program_track": "X/VISIONS 3",
+                "artists": [
+                    {
+                        "artist": "Fennesz & Lillevan",
+                        "profile_url": "https://montreal.mutek.org/en/artists/fennesz-lillevan",
+                        "date": "29 Aug",
+                        "start_time": "19:00",
+                        "end_time": "20:00"
+                    },
+                    {
+                        "artist": "Ah! Kosmos and Hainbach",
+                        "profile_url": "https://montreal.mutek.org/en/artists/ah-kosmos-and-hainbach",
+                        "date": "29 Aug",
+                        "start_time": "20:20",
+                        "end_time": "21:20"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/metropolis-2",
+        "structured_schedule": {
+            "MTELUS": {
+                "program_track": "MÉTROPOLIS 2",
+                "artists": [
+                    {
+                        "artist": "Patche",
+                        "profile_url": "https://montreal.mutek.org/en/artists/patche",
+                        "date": "29 Aug",
+                        "start_time": "23:00",
+                        "end_time": "00:00"
+                    },
+                    {
+                        "artist": "Rival Consoles + David Sydiongco",
+                        "profile_url": "https://montreal.mutek.org/en/artists/rival-consoles",
+                        "date": "29 Aug",
+                        "start_time": "00:10",
+                        "end_time": "01:25"
+                    },
+                    {
+                        "artist": "CUERPOS",
+                        "profile_url": "https://montreal.mutek.org/en/artists/cuerpos",
+                        "date": "29 Aug",
+                        "start_time": "01:30",
+                        "end_time": "02:30"
+                    },
+                    {
+                        "artist": "Facta",
+                        "profile_url": "https://montreal.mutek.org/en/artists/facta",
+                        "date": "29 Aug",
+                        "start_time": "02:35",
+                        "end_time": "03:35"
+                    },
+                    {
+                        "artist": "Ben UFO",
+                        "profile_url": "https://montreal.mutek.org/en/artists/ben-ufo",
+                        "date": "29 Aug",
+                        "start_time": "03:40",
+                        "end_time": "06:00"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-4",
+        "structured_schedule": {
+            "Satosphère": {
+                "program_track": "NOCTURNE 4",
+                "artists": [
+                    {
+                        "artist": "con secuencias + Milo Reinhardt",
+                        "profile_url": "https://montreal.mutek.org/en/artists/con-secuencias-milo-reinhardt",
+                        "date": "29 Aug",
+                        "start_time": "22:30",
+                        "end_time": "23:20"
+                    },
+                    {
+                        "artist": "Alan Harman",
+                        "profile_url": "https://montreal.mutek.org/en/artists/alan-harman",
+                        "date": "29 Aug",
+                        "start_time": "23:55",
+                        "end_time": "00:55"
+                    },
+                    {
+                        "artist": "M Salaciak",
+                        "profile_url": "https://montreal.mutek.org/en/artists/m-salaciak",
+                        "date": "29 Aug",
+                        "start_time": "01:15",
+                        "end_time": "02:15"
+                    }
+                ]
+            },
+            "Espace SAT": {
+                "program_track": "NOCTURNE 4",
+                "artists": [
+                    {
+                        "artist": "El Ángel Exterminador & Anastasiia Vorobiova",
+                        "profile_url": "https://montreal.mutek.org/en/artists/el-angel-exterminador-anastasiia-vorobiova",
+                        "date": "29 Aug",
+                        "start_time": "23:15",
+                        "end_time": "00:00"
+                    },
+                    {
+                        "artist": "Evicshen",
+                        "profile_url": "https://montreal.mutek.org/en/artists/evicshen",
+                        "date": "29 Aug",
+                        "start_time": "00:05",
+                        "end_time": "00:45"
+                    },
+                    {
+                        "artist": "Violent Magic Orchestra (VMO)",
+                        "profile_url": "https://montreal.mutek.org/en/artists/vmo-a-k-a-violent-magic-orchestra",
+                        "date": "29 Aug",
+                        "start_time": "00:55",
+                        "end_time": "01:55"
+                    },
+                    {
+                        "artist": "Cry (Kilbourne & Relaxer)",
+                        "profile_url": "https://montreal.mutek.org/en/artists/cry",
+                        "date": "29 Aug",
+                        "start_time": "02:00",
+                        "end_time": "03:00"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/play-2",
+        "structured_schedule": {
+            "Studio-Théâtre des Grands Ballets": {
+                "program_track": "PLAY 2",
+                "artists": [
+                    {
+                        "artist": "Super Galaxy Meow Meow",
+                        "profile_url": "https://montreal.mutek.org/en/artists/super-galaxy-meow-meow",
+                        "date": "30 Aug",
+                        "start_time": "15:00",
+                        "end_time": "15:35"
+                    },
+                    {
+                        "artist": "Jenn Mong & Trevor Van de Velde",
+                        "profile_url": "https://montreal.mutek.org/en/artists/jenn-mong-trevor-van-de-velde",
+                        "date": "30 Aug",
+                        "start_time": "15:45",
+                        "end_time": "16:30"
+                    },
+                    {
+                        "artist": "Paul Vivien",
+                        "profile_url": "https://montreal.mutek.org/en/artists/paul-vivien",
+                        "date": "30 Aug",
+                        "start_time": "16:40",
+                        "end_time": "17:10"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/experience-6",
+        "structured_schedule": {
+            "Esplanade Tranquille": {
+                "program_track": "EXPÉRIENCE 6",
+                "artists": [
+                    {
+                        "artist": "Sarah Rossy",
+                        "profile_url": "https://montreal.mutek.org/en/artists/sarah-rossy",
+                        "date": "30 Aug",
+                        "start_time": "17:00",
+                        "end_time": "17:45"
+                    },
+                    {
+                        "artist": "Julian Sartorius",
+                        "profile_url": "https://montreal.mutek.org/en/artists/julian-sartorius",
+                        "date": "30 Aug",
+                        "start_time": "17:55",
+                        "end_time": "18:55"
+                    },
+                    {
+                        "artist": "Orange Moon",
+                        "profile_url": "https://montreal.mutek.org/en/artists/orange-moon",
+                        "date": "30 Aug",
+                        "start_time": "19:00",
+                        "end_time": "20:30"
+                    },
+                    {
+                        "artist": "Jordan Gardner",
+                        "profile_url": "https://montreal.mutek.org/en/artists/jordan-gardner",
+                        "date": "30 Aug",
+                        "start_time": "20:35",
+                        "end_time": "21:20"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "event_url": "https://montreal.mutek.org/en/shows/2026/nocturne-5",
+        "structured_schedule": {
+            "Satosphère": {
+                "program_track": "NOCTURNE 5",
+                "artists": [
+                    {
+                        "artist": "ebb",
+                        "profile_url": "https://montreal.mutek.org/en/artists/ebb",
+                        "date": "30 Aug",
+                        "start_time": "22:30",
+                        "end_time": "23:15"
+                    },
+                    {
+                        "artist": "Poirier",
+                        "profile_url": "https://montreal.mutek.org/en/artists/poirier",
+                        "date": "30 Aug",
+                        "start_time": "23:35",
+                        "end_time": "00:25"
+                    },
+                    {
+                        "artist": "Nazar",
+                        "profile_url": "https://montreal.mutek.org/en/artists/nazar",
+                        "date": "30 Aug",
+                        "start_time": "00:30",
+                        "end_time": "01:30"
+                    },
+                    {
+                        "artist": "Dave Huismans",
+                        "profile_url": "https://montreal.mutek.org/en/artists/dave-huismans",
+                        "date": "30 Aug",
+                        "start_time": "01:35",
+                        "end_time": "02:35"
+                    }
+                ]
+            },
+            "Espace SAT": {
+                "program_track": "NOCTURNE 5",
+                "artists": [
+                    {
+                        "artist": "Purelink with Mika Oki",
+                        "profile_url": "https://montreal.mutek.org/en/artists/purelink",
+                        "date": "30 Aug",
+                        "start_time": "23:00",
+                        "end_time": "23:45"
+                    },
+                    {
+                        "artist": "Matthew Herbert & Julian Sartorius",
+                        "profile_url": "https://montreal.mutek.org/en/artists/matthew-herbert-julian-sartorius",
+                        "date": "30 Aug",
+                        "start_time": "23:55",
+                        "end_time": "00:55"
+                    },
+                    {
+                        "artist": "Dana Ruh",
+                        "profile_url": "https://montreal.mutek.org/en/artists/dana-ruh",
+                        "date": "30 Aug",
+                        "start_time": "01:00",
+                        "end_time": "02:00"
+                    },
+                    {
+                        "artist": "MUTEK Soundsystem",
+                        "profile_url": "https://montreal.mutek.org/en/artists/mutek-soundsystem",
+                        "date": "30 Aug",
+                        "start_time": "02:30",
+                        "end_time": "05:30"
+                    }
+                ]
+            }
+        }
+    }
+]
