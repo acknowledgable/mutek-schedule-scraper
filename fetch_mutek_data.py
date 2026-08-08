@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 import json
 import re
 import sys
+import argparse
 from datetime import datetime
 
 HEADERS = {
@@ -138,10 +139,19 @@ def scrape_event_details(url):
                     venue_data[venue_name] = _extract_artists_from_container(container)
         else:
             # Scenario B: Single room or general event lacking h3 titles (e.g., Expérience)
+            
+            sidebar_location = soup.find('div', class_='event-single__sidebar-location')
+            actual_venue_name = "Main Venue"
+            
+            if sidebar_location:
+                p_tag = sidebar_location.find('p')
+                if p_tag:
+                    actual_venue_name = p_tag.get_text(strip=True)
+
             containers = soup.find_all('div', class_=lambda c: c and 'event-single__showrooms-container' in c)
             for idx, container in enumerate(containers):
-                # Fallback to a default name since it's not explicitly labeled
-                venue_name = "Main Venue" if len(containers) == 1 else f"Venue {idx+1}"
+                # Fallback to the extracted name or a default name since it's not explicitly labeled
+                venue_name = actual_venue_name if len(containers) == 1 else f"{actual_venue_name} {idx+1}"
                 venue_data[venue_name] = _extract_artists_from_container(container)
 
         return {
@@ -157,17 +167,40 @@ def scrape_event_details(url):
         return None
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Scrape Mutek schedule data.')
+    parser.add_argument('-d', '--develop', action='store_true', help='Scrape only one single-room event and one multi-room event, then exit.')
+    args = parser.parse_args()
+
     # 1. Scrape the main program schedule for all event links
     program_url = "https://montreal.mutek.org/en/schedule/program?_gl=1*yqfcs7*_up*MQ..&gclid=CjwKCAjwpqHTBhAcEiwAj2Aful13LWxyHsdkRPvpqJvZCNNNjIn4RvVos3E_dzwZOW76qsud4LT6GhoCV48QAvD_BwE&gbraid=0AAAAADOgMODZz1eGZxaShegp9wPUlb_EZ#weekly-view"
     
     event_links = scrape_program_links(program_url)
     
     all_festival_data = []
+    found_single = False
+    found_multi = False
     
     # 2. Iterate through each discovered link and extract the details
     for link in event_links:
         event_data = scrape_event_details(link)
         if event_data and event_data.get('structured_schedule'):
-            all_festival_data.append(event_data)
+            schedule = event_data['structured_schedule']
+            
+            # If in develop mode, limit to 1 single-room and 1 multi-room
+            if args.develop:
+                is_multi = len(schedule.keys()) > 1
+                
+                if is_multi and not found_multi:
+                    all_festival_data.append(event_data)
+                    found_multi = True
+                elif not is_multi and not found_single:
+                    all_festival_data.append(event_data)
+                    found_single = True
+                    
+                # Break early once we have one of each
+                if found_single and found_multi:
+                    break
+            else:
+                all_festival_data.append(event_data)
             
     print(json.dumps(all_festival_data, indent=4, ensure_ascii=False))
