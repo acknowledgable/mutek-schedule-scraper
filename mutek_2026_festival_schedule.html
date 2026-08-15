@@ -159,7 +159,7 @@
             </div>
             <div class="hidden md:flex items-center gap-1.5">
                 <i data-lucide="map-pin" class="w-3.5 h-3.5 text-purple-400"></i>
-                <span>Key Venues</span>
+                <span>3 Key Venues</span>
             </div>
         </div>
     </section>
@@ -212,7 +212,7 @@
             <div class="flex items-center justify-between pt-2">
                 <a id="modalEventLink" href="#" target="_blank" rel="noopener noreferrer" 
                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-600/20">
-                    <span>View Details</span>
+                    <span>View Event Page</span>
                     <i data-lucide="external-link" class="w-4 h-4"></i>
                 </a>
                 <button id="closeModalBtn" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm font-medium transition-colors">
@@ -226,7 +226,7 @@
     <footer class="bg-[#14141A] border-t border-gray-800 px-4 py-2.5 text-xs text-gray-500 flex flex-wrap justify-between items-center gap-2">
         <div class="flex items-center gap-2">
             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>MUTEK Montréal Data Loaded</span>
+            <span>MUTEK Montréal 27th Edition Data Loaded</span>
         </div>
         <div>
             Tip: Click performance blocks for details. Drag or scroll horizontally to explore full festival timeline.
@@ -234,7 +234,7 @@
     </footer>
 
     <script>
-        // Raw Data extracted directly from updated JSON structure
+        // Raw Data extracted directly from the prompt JSON structure[cite: 1]
         const rawFestivalData = [
             {
                 "event_url": "https://montreal.mutek.org/en/shows/2026/experience-1",
@@ -1094,7 +1094,7 @@
             }
         ];
 
-        // Mappings & Colors
+        // Mappings & Colors[cite: 2]
         const trackColors = {
             'EXPÉRIENCE': { bg: 'bg-emerald-950/80', border: 'border-emerald-500/50', text: 'text-emerald-300', accent: '#10B981' },
             'NOCTURNE': { bg: 'bg-purple-950/80', border: 'border-purple-500/50', text: 'text-purple-300', accent: '#A855F7' },
@@ -1207,7 +1207,7 @@
         // Normalize & Process Data[cite: 2]
         function processData() {
             const dateMap = new Map();
-            // Expected chronological dates
+            // Expected chronological dates[cite: 2]
             const dateOrder = ["25 Aug", "26 Aug", "27 Aug", "28 Aug", "29 Aug", "30 Aug"];
 
             dateOrder.forEach(date => {
@@ -1219,14 +1219,14 @@
                 const schedule = event.structured_schedule;
 
                 Object.keys(schedule).forEach(venueName => {
-                    // Standardize Venue Names (Fix spelling errors like Satoshpère)
+                    // Standardize Venue Names (Fix spelling errors like Satoshpère)[cite: 2]
                     let cleanVenue = venueName.trim();
                     if (cleanVenue === 'Satoshpère') cleanVenue = 'Satosphère';
 
                     const trackInfo = schedule[venueName];
                     const programTrack = trackInfo.program_track || "Unknown";
                     
-                    // Create a unique key for the venue+track combo
+                    // Create a unique key for the venue+track combo[cite: 2]
                     const venueKey = cleanVenue + '|' + programTrack;
 
                     if (trackInfo.artists && Array.isArray(trackInfo.artists)) {
@@ -1263,7 +1263,7 @@
             return { dateMap, dateOrder };
         }
 
-        // Helper: Get Track Category
+        // Helper: Get Track Category[cite: 2]
         function getTrackCategory(trackName) {
             if (!trackName) return 'DEFAULT';
             const upper = trackName.toUpperCase();
@@ -1275,38 +1275,38 @@
             return 'DEFAULT';
         }
 
-        // Helper: Convert "HH:MM" to float hour (handling post-midnight times e.g. 02:00 -> 26.0)
+        // Helper: Convert "HH:MM" to float hour (handling post-midnight times e.g. 02:00 -> 26.0)[cite: 2]
         function parseTimeToHours(timeStr, baseDate) {
             if (!timeStr || timeStr === 'Unknown') return null;
             const [h, m] = timeStr.split(':').map(Number);
             let hourVal = h + m / 60;
-            // Handle late night sets after midnight (e.g., 00:00 - 06:00 counts as late night of current programming day)
+            // Handle late night sets after midnight (e.g., 00:00 - 06:00 counts as late night of current programming day)[cite: 2]
             if (hourVal < 12) {
                 hourVal += 24;
             }
             return hourVal;
         }
 
-        // Render Schedule Matrix
+        // Render Schedule Matrix[cite: 2]
         function renderSchedule() {
             const { dateMap, dateOrder } = processData();
             const gridContainer = document.getElementById('scheduleGrid');
 
-            // Timeline Bounds (14:00 PM to 30:00 / 06:00 AM next morning)
+            // Timeline Bounds (14:00 PM to 30:00 / 06:00 AM next morning)[cite: 2]
             const minHour = 14; 
             const maxHour = 30; // 6:00 AM late
             const totalHours = maxHour - minHour;
 
-            // Filter Dates based on selection
+            // Filter Dates based on selection[cite: 2]
             const displayedDates = activeDateFilter === 'ALL' 
                 ? dateOrder 
                 : dateOrder.filter(d => d === activeDateFilter);
 
-            // Compute total venues / columns and build hierarchical groups
+            // Compute total venues / columns and build hierarchical groups[cite: 2]
             let columns = [];
             let dateGroups = [];
             
-            // Map alternating background colors for dates to visually separate them
+            // Map alternating background colors for dates to visually separate them[cite: 2]
             const dateBgColors = {};
             let dIdx = 0;
             displayedDates.forEach(d => {
@@ -1318,7 +1318,7 @@
                 const venuesMap = dateMap.get(date);
                 if (venuesMap && venuesMap.size > 0) {
                     
-                    // Group by trackName to merge track headers
+                    // Group by trackName to merge track headers[cite: 2]
                     let tracksMap = new Map();
                     for (const [vKey, vData] of venuesMap.entries()) {
                         if (!tracksMap.has(vData.trackName)) {
@@ -1334,7 +1334,7 @@
                     let dateColCount = 0;
                     let trackGroups = [];
 
-                    // Sort tracks alphabetically and assign columns
+                    // Sort tracks alphabetically and assign columns[cite: 2]
                     Array.from(tracksMap.values()).sort((a,b) => a.trackName.localeCompare(b.trackName)).forEach(tGroup => {
                         let trackColCount = tGroup.venues.length;
                         dateColCount += trackColCount;
@@ -1344,7 +1344,7 @@
                             span: trackColCount
                         });
 
-                        // Sort venues consistently
+                        // Sort venues consistently[cite: 2]
                         tGroup.venues.sort((a, b) => {
                             if (a.venue === 'Main Venue') return -1;
                             if (b.venue === 'Main Venue') return 1;
@@ -1370,7 +1370,7 @@
                 }
             });
 
-            // Start Building HTML
+            // Start Building HTML[cite: 2]
             let html = ``;
 
             // Table Layout Header Structure[cite: 2]
@@ -1380,10 +1380,10 @@
 
             html += `<div style="width: ${Math.max(totalWidth, 100)}px;" class="flex flex-col relative">`;
 
-            // === 1. TOP HEADER (X-AXIS LAYER 1: DATE, LAYER 2: TRACK, LAYER 3: VENUES) ===
+            // === 1. TOP HEADER (X-AXIS LAYER 1: DATE, LAYER 2: TRACK, LAYER 3: VENUES) ===[cite: 2]
             html += `<div class="sticky-column-header bg-[#14141A] border-b border-gray-800 flex flex-col shadow-lg">`;
             
-            // Layer 1: Date Bar
+            // Layer 1: Date Bar[cite: 2]
             html += `<div class="flex border-b border-gray-800/60 bg-[#1A1A24]">`;
             html += `<div class="sticky-corner bg-[#1A1A24] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 flex items-center justify-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Time</div>`;
             
@@ -1395,11 +1395,11 @@
                     </div>
                 `;
             });
-            html += `</div>`; // End Date Bar
+            html += `</div>`; // End Date Bar[cite: 2]
 
-            // Layer 2: Track Bar (Linked to Event URL)
+            // Layer 2: Track Bar (Linked to Event URL)[cite: 2]
             html += `<div class="flex border-b border-gray-800/60 bg-[#17171F]">`;
-            html += `<div class="sticky-corner bg-[#17171F] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer
+            html += `<div class="sticky-corner bg-[#17171F] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer[cite: 2]
             
             dateGroups.forEach(dg => {
                 dg.tracks.forEach(tg => {
@@ -1417,11 +1417,11 @@
                     `;
                 });
             });
-            html += `</div>`; // End Track Bar
+            html += `</div>`; // End Track Bar[cite: 2]
 
-            // Layer 3: Venue Bar
+            // Layer 3: Venue Bar[cite: 2]
             html += `<div class="flex">`;
-            html += `<div class="sticky-corner bg-[#14141A] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer
+            html += `<div class="sticky-corner bg-[#14141A] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer[cite: 2]
             
             columns.forEach(col => {
                 html += `
@@ -1431,14 +1431,14 @@
                     </div>
                 `;
             });
-            html += `</div>`; // End Venue Bar
-            html += `</div>`; // End Header
+            html += `</div>`; // End Venue Bar[cite: 2]
+            html += `</div>`; // End Header[cite: 2]
 
-            // === 2. GRID BODY (Y-AXIS TIME & COLUMNS) ===
+            // === 2. GRID BODY (Y-AXIS TIME & COLUMNS) ===[cite: 2]
             const gridHeight = totalHours * hourScaleHeight;
             html += `<div class="flex relative time-grid-bg" style="height: ${gridHeight}px;">`;
 
-            // Y-Axis Time Scale Column
+            // Y-Axis Time Scale Column[cite: 2]
             html += `<div class="sticky-time-axis bg-[#0D0D11]/95 border-r border-gray-800 w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] flex flex-col relative select-none">`;
             for (let hour = minHour; hour < maxHour; hour++) {
                 const topPos = (hour - minHour) * hourScaleHeight;
@@ -1450,15 +1450,15 @@
                     </div>
                 `;
             }
-            html += `</div>`; // End Time Axis Column
+            html += `</div>`; // End Time Axis Column[cite: 2]
 
-            // Venue Columns & Event Boxes
+            // Venue Columns & Event Boxes[cite: 2]
             columns.forEach(col => {
                 const dayBg = dateBgColors[col.date] || 'bg-transparent';
-                // Apply alternating date background to column here
+                // Apply alternating date background to column here[cite: 2]
                 html += `<div style="width: ${columnWidth}px;" class="relative border-r border-gray-800/40 h-full ${dayBg}">`;
 
-                // Draw Horizontal Hour Guide Lines
+                // Draw Horizontal Hour Guide Lines[cite: 2]
                 for (let hour = minHour; hour < maxHour; hour++) {
                     const topPos = (hour - minHour) * hourScaleHeight;
                     html += `<div style="top: ${topPos}px;" class="absolute w-full border-t border-gray-800/20"></div>`;
@@ -1471,7 +1471,7 @@
                     const endVal = parseTimeToHours(perf.end_time, perf.date);
                     const isFav = favoritesSet.has(perf.id);
 
-                    // Filter search matching
+                    // Filter search matching[cite: 2]
                     const isSearchMatched = currentSearch.trim() === '' || 
                         perf.artist.toLowerCase().includes(currentSearch.toLowerCase()) || 
                         perf.track.toLowerCase().includes(currentSearch.toLowerCase());
@@ -1486,9 +1486,9 @@
                     const starIconClass = isFav ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-300';
 
                     if (startVal !== null && endVal !== null) {
-                        // Positioned Box
+                        // Positioned Box[cite: 2]
                         let durationHours = endVal - startVal;
-                        if (durationHours <= 0) durationHours = 0.5; // fallback min height
+                        if (durationHours <= 0) durationHours = 0.5; // fallback min height[cite: 2]
 
                         const topPixels = (startVal - minHour) * hourScaleHeight;
                         const heightPixels = Math.max(durationHours * hourScaleHeight, 36);
@@ -1518,7 +1518,7 @@
                             </div>
                         `;
                     } else {
-                        // "Unknown" Time Performances fallback rendered at top banner in column
+                        // "Unknown" Time Performances fallback rendered at top banner in column[cite: 2]
                         const topPixels = unknownTimeOffset;
                         unknownTimeOffset += 52;
 
@@ -1538,17 +1538,17 @@
                     }
                 });
 
-                html += `</div>`; // End Column
+                html += `</div>`; // End Column[cite: 2]
             });
 
-            html += `</div>`; // End Grid Body
-            html += `</div>`; // End Main Inner Container
+            html += `</div>`; // End Grid Body[cite: 2]
+            html += `</div>`; // End Main Inner Container[cite: 2]
 
             gridContainer.innerHTML = html;
             lucide.createIcons();
         }
 
-        // Render Date Filter Buttons
+        // Render Date Filter Buttons[cite: 2]
         function renderDateFilters() {
             const dateContainer = document.getElementById('dateFilters');
             const dates = ["ALL", "25 Aug", "26 Aug", "27 Aug", "28 Aug", "29 Aug", "30 Aug"];
@@ -1575,7 +1575,7 @@
             renderSchedule();
         }
 
-        // Render Track Legend
+        // Render Track Legend[cite: 2]
         function renderTrackLegend() {
             const legendContainer = document.getElementById('trackLegend');
             const tracks = [
@@ -1630,7 +1630,7 @@
 
             const linkBtn = document.getElementById('modalEventLink');
             
-            // Prioritize profile URL if available, otherwise fallback to event url
+            // Prioritize profile URL if available, otherwise fallback to event url[cite: 2]
             if (perf.profile_url) {
                 linkBtn.href = perf.profile_url;
                 linkBtn.classList.remove('hidden');
@@ -1661,14 +1661,14 @@
             }, 200);
         }
 
-        // Initialization & Event Listeners
+        // Initialization & Event Listeners[cite: 2]
         window.onload = function() {
             updateFavoritesCountBadge();
             renderDateFilters();
             renderTrackLegend();
             renderSchedule();
 
-            // Search input handler
+            // Search input handler[cite: 2]
             const searchInput = document.getElementById('searchInput');
             const clearSearch = document.getElementById('clearSearch');
 
@@ -1689,14 +1689,14 @@
                 renderSchedule();
             });
 
-            // Modal Close listeners
+            // Modal Close listeners[cite: 2]
             document.getElementById('closeModal').addEventListener('click', closeModal);
             document.getElementById('closeModalBtn').addEventListener('click', closeModal);
             document.getElementById('artistModal').addEventListener('click', (e) => {
                 if (e.target.id === 'artistModal') closeModal();
             });
 
-            // Zoom Control Listeners
+            // Zoom Control Listeners[cite: 2]
             document.getElementById('zoomInBtn').addEventListener('click', () => {
                 if (hourScaleHeight < 140) {
                     hourScaleHeight += 15;
