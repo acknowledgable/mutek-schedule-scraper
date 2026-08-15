@@ -1113,6 +1113,26 @@
             "30 Aug": "Sunday"
         };
 
+        // Distinct high-contrast themes for alternating days from left to right
+        const dateColorThemes = [
+            {
+                dateBar: 'bg-[#18263e]',
+                trackBar: 'bg-[#131e33]',
+                venueBar: 'bg-[#0f182a]',
+                columnBody: 'bg-[#101d36]',
+                dateText: 'text-cyan-300',
+                borderRight: 'border-r-4 border-r-cyan-500/60'
+            },
+            {
+                dateBar: 'bg-[#341b3a]',
+                trackBar: 'bg-[#29142e]',
+                venueBar: 'bg-[#200f24]',
+                columnBody: 'bg-[#27112c]',
+                dateText: 'text-fuchsia-300',
+                borderRight: 'border-r-4 border-r-fuchsia-500/60'
+            }
+        ];
+
         // Cookie Management Functions
         const COOKIE_NAME = 'mutek_favorites_2026';
 
@@ -1306,11 +1326,11 @@
             let columns = [];
             let dateGroups = [];
             
-            // Map alternating background colors for dates to visually separate them[cite: 2]
-            const dateBgColors = {};
+            // Map alternating color styles strictly alternating from left to right
+            const dateThemesMap = {};
             let dIdx = 0;
             displayedDates.forEach(d => {
-                dateBgColors[d] = (dIdx % 2 === 0) ? 'bg-transparent' : 'bg-blue-900/5';
+                dateThemesMap[d] = dateColorThemes[dIdx % dateColorThemes.length];
                 dIdx++;
             });
 
@@ -1349,17 +1369,23 @@
                             if (a.venue === 'Main Venue') return -1;
                             if (b.venue === 'Main Venue') return 1;
                             return a.venue.localeCompare(b.venue);
-                        }).forEach(v => {
+                        }).forEach((v, vIndex) => {
                             columns.push({
                                 date,
                                 dayName: dayNames[date] || '',
                                 venue: v.venue,
                                 trackName: v.trackName,
                                 eventUrl: v.eventUrl,
-                                performances: v.performances
+                                performances: v.performances,
+                                isLastInDate: false
                             });
                         });
                     });
+
+                    // Flag the last column of this date group so we can draw a stronger delimiter
+                    if (columns.length > 0) {
+                        columns[columns.length - 1].isLastInDate = true;
+                    }
 
                     dateGroups.push({
                         date,
@@ -1389,9 +1415,10 @@
             
             dateGroups.forEach(dg => {
                 const w = dg.span * columnWidth;
+                const theme = dateThemesMap[dg.date];
                 html += `
-                    <div style="width: ${w}px;" class="border-r border-gray-800 py-2.5 px-2 text-center flex flex-col justify-center items-center">
-                        <span class="text-xs sm:text-sm font-bold text-blue-400 tracking-wide">${dg.dayName}, ${dg.date}</span>
+                    <div style="width: ${w}px;" class="border-r border-gray-800 py-2.5 px-2 text-center flex flex-col justify-center items-center ${theme.dateBar}">
+                        <span class="text-xs sm:text-sm font-bold ${theme.dateText} tracking-wide">${dg.dayName}, ${dg.date}</span>
                     </div>
                 `;
             });
@@ -1402,13 +1429,14 @@
             html += `<div class="sticky-corner bg-[#17171F] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer[cite: 2]
             
             dateGroups.forEach(dg => {
+                const theme = dateThemesMap[dg.date];
                 dg.tracks.forEach(tg => {
                     const w = tg.span * columnWidth;
                     const catKey = getTrackCategory(tg.trackName);
                     const style = trackColors[catKey] || trackColors.DEFAULT;
                     
                     html += `
-                        <div style="width: ${w}px;" class="border-r border-gray-800/80 py-1.5 px-1.5 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider flex items-center justify-center">
+                        <div style="width: ${w}px;" class="border-r border-gray-800/80 py-1.5 px-1.5 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider flex items-center justify-center ${theme.trackBar}">
                             <a href="${tg.eventUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1 leading-tight ${style.text} hover:text-white transition-colors">
                                 <span class="break-words">${tg.trackName}</span>
                                 <i data-lucide="external-link" class="w-2.5 h-2.5 opacity-70 shrink-0"></i>
@@ -1424,8 +1452,10 @@
             html += `<div class="sticky-corner bg-[#14141A] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer[cite: 2]
             
             columns.forEach(col => {
+                const theme = dateThemesMap[col.date];
+                const borderClass = col.isLastInDate ? theme.borderRight : 'border-r border-gray-800/80';
                 html += `
-                    <div style="width: ${columnWidth}px;" class="border-r border-gray-800/80 bg-[#14141A] py-1.5 px-1.5 text-center text-[11px] font-medium text-gray-300 flex items-center justify-center gap-1">
+                    <div style="width: ${columnWidth}px;" class="${borderClass} ${theme.venueBar} py-1.5 px-1.5 text-center text-[11px] font-medium text-gray-300 flex items-center justify-center gap-1">
                         <i data-lucide="map-pin" class="w-2.5 h-2.5 text-purple-400 shrink-0"></i>
                         <span class="break-words leading-tight" title="${col.venue}">${col.venue}</span>
                     </div>
@@ -1454,9 +1484,11 @@
 
             // Venue Columns & Event Boxes[cite: 2]
             columns.forEach(col => {
-                const dayBg = dateBgColors[col.date] || 'bg-transparent';
-                // Apply alternating date background to column here[cite: 2]
-                html += `<div style="width: ${columnWidth}px;" class="relative border-r border-gray-800/40 h-full ${dayBg}">`;
+                const theme = dateThemesMap[col.date];
+                const borderClass = col.isLastInDate ? theme.borderRight : 'border-r border-gray-800/40';
+                
+                // Alternating distinct date background applied per day
+                html += `<div style="width: ${columnWidth}px;" class="relative ${borderClass} h-full ${theme.columnBody}">`;
 
                 // Draw Horizontal Hour Guide Lines[cite: 2]
                 for (let hour = minHour; hour < maxHour; hour++) {
