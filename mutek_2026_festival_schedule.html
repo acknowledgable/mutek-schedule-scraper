@@ -47,19 +47,27 @@
             background: #3B82F6;
         }
 
-        .sticky-column-header {
+        /* iOS WebKit Hardware-Accelerated Smooth Sticky Scrolling */
+        #gridViewport {
+            -webkit-overflow-scrolling: touch;
+            overflow: auto;
+        }
+
+        .sticky-corner-cell {
+            position: -webkit-sticky;
             position: sticky;
-            top: 0;
+            left: 0;
+            z-index: 55;
+        }
+
+        .sticky-header-row {
+            position: -webkit-sticky;
+            position: sticky;
             z-index: 30;
         }
 
-        .sticky-time-axis {
-            position: sticky;
-            left: 0;
-            z-index: 25;
-        }
-
-        .sticky-corner {
+        .sticky-time-col {
+            position: -webkit-sticky;
             position: sticky;
             left: 0;
             z-index: 40;
@@ -1400,32 +1408,31 @@
 
             // Table Layout Header Structure[cite: 2]
             const columnWidth = 110; // width per venue column in pixels
-            const timeAxisWidth = 40; // width of y-axis time column
+            const timeAxisWidth = 44; // half as wide as original 80px, perfectly fits "HH:MM"
             const totalWidth = timeAxisWidth + (columns.length * columnWidth);
 
-            html += `<div style="width: ${Math.max(totalWidth, 100)}px;" class="flex flex-col relative">`;
+            html += `<div style="width: ${Math.max(totalWidth, 100)}px;" class="flex flex-col">`;
 
-            // === 1. TOP HEADER (X-AXIS LAYER 1: DATE, LAYER 2: TRACK, LAYER 3: VENUES) ===[cite: 2]
-            html += `<div class="sticky-column-header bg-[#14141A] border-b border-gray-800 flex flex-col shadow-lg">`;
+            // === 1. TOP 2D STICKY HEADERS (INDEPENDENT ROWS FOR 100% RELIABLE SAFARI/WEBKIT STICKY 2D SCROLLING) ===
             
-            // Layer 1: Date Bar[cite: 2]
-            html += `<div class="flex border-b border-gray-800/60 bg-[#1A1A24]">`;
-            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-corner bg-[#1A1A24] border-r border-gray-800 flex items-center justify-center p-0.5 text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Time</div>`;
+            // Layer 1: Date Bar (Sticky Top: 0px)
+            html += `<div class="sticky-header-row flex border-b border-gray-800/60" style="top: 0px;">`;
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px; height: 36px;" class="sticky-corner-cell bg-[#1A1A24] border-r border-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0 shadow-md">Time</div>`;
             
             dateGroups.forEach(dg => {
                 const w = dg.span * columnWidth;
                 const theme = dateThemesMap[dg.date];
                 html += `
-                    <div style="width: ${w}px;" class="border-r border-gray-800 py-2.5 px-2 text-center flex flex-col justify-center items-center ${theme.dateBar}">
-                        <span class="text-xs sm:text-sm font-bold ${theme.dateText} tracking-wide">${dg.dayName}, ${dg.date}</span>
+                    <div style="width: ${w}px; height: 36px;" class="border-r border-gray-800 px-2 text-center flex flex-col justify-center items-center ${theme.dateBar}">
+                        <span class="text-xs sm:text-sm font-bold ${theme.dateText} tracking-wide truncate">${dg.dayName}, ${dg.date}</span>
                     </div>
                 `;
             });
-            html += `</div>`; // End Date Bar[cite: 2]
+            html += `</div>`; // End Date Bar
 
-            // Layer 2: Track Bar (Linked to Event URL)[cite: 2]
-            html += `<div class="flex border-b border-gray-800/60 bg-[#17171F]">`;
-            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-corner bg-[#17171F] border-r border-gray-800 z-40"></div>`; // spacer
+            // Layer 2: Track Bar (Sticky Top: 36px)
+            html += `<div class="sticky-header-row flex border-b border-gray-800/60" style="top: 36px;">`;
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px; height: 28px;" class="sticky-corner-cell bg-[#17171F] border-r border-gray-800 shrink-0 shadow-md"></div>`;
             
             dateGroups.forEach(dg => {
                 const theme = dateThemesMap[dg.date];
@@ -1435,46 +1442,45 @@
                     const style = trackColors[catKey] || trackColors.DEFAULT;
                     
                     html += `
-                        <div style="width: ${w}px;" class="border-r border-gray-800/80 py-1.5 px-1.5 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider flex items-center justify-center ${theme.trackBar}">
-                            <a href="${tg.eventUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1 leading-tight ${style.text} hover:text-white transition-colors">
-                                <span class="break-words">${tg.trackName}</span>
+                        <div style="width: ${w}px; height: 28px;" class="border-r border-gray-800/80 px-1.5 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider flex items-center justify-center ${theme.trackBar}">
+                            <a href="${tg.eventUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1 leading-tight ${style.text} hover:text-white transition-colors truncate">
+                                <span class="truncate">${tg.trackName}</span>
                                 <i data-lucide="external-link" class="w-2.5 h-2.5 opacity-70 shrink-0"></i>
                             </a>
                         </div>
                     `;
                 });
             });
-            html += `</div>`; // End Track Bar[cite: 2]
+            html += `</div>`; // End Track Bar
 
-            // Layer 3: Venue Bar[cite: 2]
-            html += `<div class="flex">`;
-            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-corner bg-[#14141A] border-r border-gray-800 z-40"></div>`; // spacer
+            // Layer 3: Venue Bar (Sticky Top: 64px)
+            html += `<div class="sticky-header-row flex border-b border-gray-800 shadow-lg" style="top: 64px;">`;
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px; height: 32px;" class="sticky-corner-cell bg-[#14141A] border-r border-gray-800 shrink-0 shadow-md"></div>`;
             
             columns.forEach(col => {
                 const theme = dateThemesMap[col.date];
                 const borderClass = col.isLastInDate ? theme.borderRight : 'border-r border-gray-800/80';
                 html += `
-                    <div style="width: ${columnWidth}px;" class="${borderClass} ${theme.venueBar} py-1.5 px-1.5 text-center text-[11px] font-medium text-gray-300 flex items-center justify-center gap-1">
+                    <div style="width: ${columnWidth}px; height: 32px;" class="${borderClass} ${theme.venueBar} px-1.5 text-center text-[11px] font-medium text-gray-300 flex items-center justify-center gap-1">
                         <i data-lucide="map-pin" class="w-2.5 h-2.5 text-purple-400 shrink-0"></i>
                         <span class="break-words leading-tight" title="${col.venue}">${col.venue}</span>
                     </div>
                 `;
             });
-            html += `</div>`; // End Venue Bar[cite: 2]
-            html += `</div>`; // End Header[cite: 2]
+            html += `</div>`; // End Venue Bar
 
             // === 2. GRID BODY (Y-AXIS TIME & COLUMNS) ===[cite: 2]
             const gridHeight = totalHours * hourScaleHeight;
             html += `<div class="flex relative time-grid-bg" style="height: ${gridHeight}px;">`;
 
-            // Y-Axis Time Scale Column (Sticky Left)
-            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-time-axis bg-[#0D0D11] border-r border-gray-800 flex flex-col relative select-none shrink-0 shadow-lg">`;
+            // Y-Axis Time Scale Column (Opaque Frozen Left Column)
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-time-col bg-[#0D0D11] border-r border-gray-700/80 flex flex-col select-none shrink-0 shadow-2xl">`;
             for (let hour = minHour; hour < maxHour; hour++) {
                 const topPos = (hour - minHour) * hourScaleHeight;
                 const displayHour = hour >= 24 ? hour - 24 : hour;
                 const formattedHour = `${String(displayHour).padStart(2, '0')}:00`;
                 html += `
-                    <div style="top: ${topPos}px; height: ${hourScaleHeight}px;" class="absolute w-full border-t border-gray-800/40 px-0.5 pt-1 text-[10px] font-mono text-gray-400 flex items-start justify-center">
+                    <div style="top: ${topPos}px; height: ${hourScaleHeight}px;" class="absolute w-full border-t border-gray-800/60 pt-1 text-[10px] font-mono text-gray-300 flex items-start justify-center">
                         ${formattedHour}
                     </div>
                 `;
