@@ -76,6 +76,12 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 130, 246, 0.3);
         }
 
+        .is-favorite {
+            border-width: 3px !important;
+            border-color: #F59E0B !important;
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.45) !important;
+        }
+
         /* Subtle grid background pattern */
         .time-grid-bg {
             background-size: 100% 60px;
@@ -114,6 +120,13 @@
                     <i data-lucide="x" class="w-3.5 h-3.5"></i>
                 </button>
             </div>
+
+            <!-- Favorites Toggle Filter -->
+            <button id="favoritesFilterBtn" onclick="toggleFavoritesOnlyFilter()" 
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-700/60 bg-[#1A1A24] text-gray-300 hover:text-amber-400 transition-colors">
+                <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span id="favoritesBtnText">Favorites (<span id="favCount">0</span>)</span>
+            </button>
 
             <!-- Date Filter Pills -->
             <div id="dateFilters" class="flex items-center gap-1 bg-[#1A1A24] p-1 rounded-lg border border-gray-800 text-xs overflow-x-auto max-w-full">
@@ -168,9 +181,14 @@
                     </span>
                     <h3 id="modalArtistName" class="text-2xl font-bold text-white tracking-tight">Artist Name</h3>
                 </div>
-                <button id="closeModal" class="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center gap-1">
+                    <button id="modalFavBtn" class="p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-800 transition-colors" title="Toggle Favorite">
+                        <i data-lucide="star" class="w-5 h-5"></i>
+                    </button>
+                    <button id="closeModal" class="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="space-y-3 border-t border-b border-gray-800 py-4 my-4 text-sm">
@@ -1095,12 +1113,98 @@
             "30 Aug": "Sunday"
         };
 
-        // App State
+        // Cookie Management Functions
+        const COOKIE_NAME = 'mutek_favorites_2026';
+
+        function setCookie(name, value, days = 365) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = `${name}=${encodeURIComponent(value)};${expires};path=/;SameSite=Lax`;
+        }
+
+        function getCookie(name) {
+            const cname = name + "=";
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const ca = decodedCookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(cname) === 0) {
+                    return c.substring(cname.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        function loadFavorites() {
+            try {
+                const cookieVal = getCookie(COOKIE_NAME);
+                if (cookieVal) {
+                    return new Set(JSON.parse(cookieVal));
+                }
+            } catch (e) {
+                console.error("Error reading favorite cookie:", e);
+            }
+            return new Set();
+        }
+
+        function saveFavorites(favoritesSet) {
+            const arr = Array.from(favoritesSet);
+            setCookie(COOKIE_NAME, JSON.stringify(arr));
+            updateFavoritesCountBadge();
+        }
+
+        function getPerformanceId(perf) {
+            return `${perf.artist}_${perf.date}_${perf.start_time}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+        }
+
+        // App State[cite: 2]
+        let favoritesSet = loadFavorites();
+        let showFavoritesOnly = false;
         let currentSearch = '';
         let activeDateFilter = 'ALL';
         let hourScaleHeight = 70; // pixels per hour
+        let currentModalPerf = null;
 
-        // Normalize & Process Data
+        function updateFavoritesCountBadge() {
+            const countEl = document.getElementById('favCount');
+            if (countEl) {
+                countEl.textContent = favoritesSet.size;
+            }
+        }
+
+        function toggleFavorite(perfId, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+
+            if (favoritesSet.has(perfId)) {
+                favoritesSet.delete(perfId);
+            } else {
+                favoritesSet.add(perfId);
+            }
+
+            saveFavorites(favoritesSet);
+            renderSchedule();
+            if (currentModalPerf && getPerformanceId(currentModalPerf) === perfId) {
+                updateModalFavBtn(favoritesSet.has(perfId));
+            }
+        }
+
+        function toggleFavoritesOnlyFilter() {
+            showFavoritesOnly = !showFavoritesOnly;
+            const btn = document.getElementById('favoritesFilterBtn');
+            if (showFavoritesOnly) {
+                btn.classList.remove('bg-[#1A1A24]', 'text-gray-300');
+                btn.classList.add('bg-amber-500/20', 'text-amber-300', 'border-amber-500/60');
+            } else {
+                btn.classList.remove('bg-amber-500/20', 'text-amber-300', 'border-amber-500/60');
+                btn.classList.add('bg-[#1A1A24]', 'text-gray-300');
+            }
+            renderSchedule();
+        }
+
+        // Normalize & Process Data[cite: 2]
         function processData() {
             const dateMap = new Map();
             // Expected chronological dates
@@ -1142,12 +1246,15 @@
                                 });
                             }
 
-                            venuesInDate.get(venueKey).performances.push({
+                            const perfObj = {
                                 ...item,
                                 track: programTrack,
                                 venue: cleanVenue,
                                 event_url: url
-                            });
+                            };
+                            perfObj.id = getPerformanceId(perfObj);
+
+                            venuesInDate.get(venueKey).performances.push(perfObj);
                         });
                     }
                 });
@@ -1266,9 +1373,9 @@
             // Start Building HTML
             let html = ``;
 
-            // Table Layout Header Structure
-            const columnWidth = 220; // width per venue column in pixels
-            const timeAxisWidth = 80; // width of y-axis time column
+            // Table Layout Header Structure[cite: 2]
+            const columnWidth = 220; // width per venue column in pixels[cite: 2]
+            const timeAxisWidth = 80; // width of y-axis time column[cite: 2]
             const totalWidth = timeAxisWidth + (columns.length * columnWidth);
 
             html += `<div style="width: ${Math.max(totalWidth, 100)}px;" class="flex flex-col relative">`;
@@ -1357,19 +1464,26 @@
                     html += `<div style="top: ${topPos}px;" class="absolute w-full border-t border-gray-800/20"></div>`;
                 }
 
-                // Render Performances
-                let unknownTimeOffset = 10; // offset stacking for "Unknown" time performances
+                // Render Performances[cite: 2]
+                let unknownTimeOffset = 10; // offset stacking for "Unknown" time performances[cite: 2]
                 col.performances.forEach(perf => {
                     const startVal = parseTimeToHours(perf.start_time, perf.date);
                     const endVal = parseTimeToHours(perf.end_time, perf.date);
+                    const isFav = favoritesSet.has(perf.id);
 
                     // Filter search matching
                     const isSearchMatched = currentSearch.trim() === '' || 
                         perf.artist.toLowerCase().includes(currentSearch.toLowerCase()) || 
                         perf.track.toLowerCase().includes(currentSearch.toLowerCase());
 
+                    if (showFavoritesOnly && !isFav) {
+                        return;
+                    }
+
                     const catKey = getTrackCategory(perf.track);
                     const style = trackColors[catKey] || trackColors.DEFAULT;
+                    const favoriteClass = isFav ? 'is-favorite' : '';
+                    const starIconClass = isFav ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-300';
 
                     if (startVal !== null && endVal !== null) {
                         // Positioned Box
@@ -1382,13 +1496,17 @@
                         html += `
                             <div style="top: ${topPixels}px; height: ${heightPixels}px; left: 4px; right: 4px;" 
                                  onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
-                                 class="absolute performance-card rounded-lg p-2 border ${style.bg} ${style.border} cursor-pointer flex flex-col justify-between overflow-hidden group shadow-md transition-all ${isSearchMatched ? 'opacity-100 ring-1 ring-white/10' : 'opacity-25 grayscale'}">
+                                 class="absolute performance-card rounded-lg p-2 border ${style.bg} ${style.border} ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden group shadow-md transition-all ${isSearchMatched ? 'opacity-100 ring-1 ring-white/10' : 'opacity-25 grayscale'}">
                                 <div>
                                     <div class="flex items-start justify-between gap-1">
                                         <h4 class="font-bold text-xs text-white leading-tight truncate group-hover:text-blue-200" title="${perf.artist}">
                                             ${perf.artist}
                                         </h4>
+                                        <button onclick="toggleFavorite('${perf.id}', event)" class="p-0.5 -mt-1 -mr-1 rounded hover:bg-white/10 transition-colors" title="Toggle Favorite">
+                                            <i data-lucide="star" class="w-3.5 h-3.5 ${starIconClass}"></i>
+                                        </button>
                                     </div>
+                                    <!-- Program Track has been removed from here -->
                                 </div>
                                 <div class="flex items-center justify-between text-[10px] text-gray-300 font-mono mt-1 pt-1 border-t border-white/10">
                                     <span class="flex items-center gap-1 font-semibold">
@@ -1407,10 +1525,12 @@
                         html += `
                             <div style="top: ${topPixels}px; height: 46px; left: 4px; right: 4px;" 
                                  onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
-                                 class="absolute performance-card rounded-lg p-2 border bg-gray-900/90 border-dashed border-gray-600 cursor-pointer flex flex-col justify-between overflow-hidden shadow-md ${isSearchMatched ? 'opacity-100' : 'opacity-20'}">
+                                 class="absolute performance-card rounded-lg p-2 border bg-gray-900/90 border-dashed border-gray-600 ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden shadow-md ${isSearchMatched ? 'opacity-100' : 'opacity-20'}">
                                 <div class="flex items-center justify-between">
                                     <h4 class="font-semibold text-xs text-gray-200 truncate" title="${perf.artist}">${perf.artist}</h4>
-                                    <span class="text-[9px] bg-gray-800 px-1 rounded text-gray-400">TBA</span>
+                                    <button onclick="toggleFavorite('${perf.id}', event)" class="p-0.5 rounded hover:bg-white/10 transition-colors" title="Toggle Favorite">
+                                        <i data-lucide="star" class="w-3.5 h-3.5 ${starIconClass}"></i>
+                                    </button>
                                 </div>
                                 <div class="text-[10px] text-gray-400 truncate font-mono">Time: ${perf.start_time}</div>
                             </div>
@@ -1479,8 +1599,19 @@
             legendContainer.innerHTML += html;
         }
 
-        // Modal Logic
+        function updateModalFavBtn(isFav) {
+            const btn = document.getElementById('modalFavBtn');
+            if (isFav) {
+                btn.innerHTML = `<i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>`;
+            } else {
+                btn.innerHTML = `<i data-lucide="star" class="w-5 h-5 text-gray-400"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        // Modal Logic[cite: 2]
         function openModal(perf) {
+            currentModalPerf = perf;
             const modal = document.getElementById('artistModal');
             const content = document.getElementById('artistModalContent');
             
@@ -1490,6 +1621,13 @@
             document.getElementById('modalTime').textContent = `${perf.start_time} - ${perf.end_time}`;
             document.getElementById('modalVenue').textContent = perf.venue;
             
+            updateModalFavBtn(favoritesSet.has(perf.id));
+
+            const favBtn = document.getElementById('modalFavBtn');
+            favBtn.onclick = () => {
+                toggleFavorite(perf.id);
+            };
+
             const linkBtn = document.getElementById('modalEventLink');
             
             // Prioritize profile URL if available, otherwise fallback to event url
@@ -1513,6 +1651,7 @@
         }
 
         function closeModal() {
+            currentModalPerf = null;
             const modal = document.getElementById('artistModal');
             const content = document.getElementById('artistModalContent');
             content.classList.remove('scale-100', 'opacity-100');
@@ -1524,6 +1663,7 @@
 
         // Initialization & Event Listeners
         window.onload = function() {
+            updateFavoritesCountBadge();
             renderDateFilters();
             renderTrackLegend();
             renderSchedule();
