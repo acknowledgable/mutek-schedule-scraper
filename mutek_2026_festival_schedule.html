@@ -185,7 +185,7 @@
                     <button id="modalFavBtn" class="p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-800 transition-colors" title="Toggle Favorite">
                         <i data-lucide="star" class="w-5 h-5"></i>
                     </button>
-                    <button id="closeModal" class="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+                    <button id="closeModal" class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -1374,7 +1374,7 @@
             let html = ``;
 
             // Table Layout Header Structure[cite: 2]
-            const columnWidth = 220; // width per venue column in pixels[cite: 2]
+            const columnWidth = 110; // width per venue column in pixels
             const timeAxisWidth = 80; // width of y-axis time column[cite: 2]
             const totalWidth = timeAxisWidth + (columns.length * columnWidth);
 
@@ -1390,8 +1390,8 @@
             dateGroups.forEach(dg => {
                 const w = dg.span * columnWidth;
                 html += `
-                    <div style="width: ${w}px;" class="border-r border-gray-800 py-2.5 px-3 text-center flex flex-col justify-center items-center">
-                        <span class="text-sm font-bold text-blue-400 tracking-wide">${dg.dayName}, ${dg.date}</span>
+                    <div style="width: ${w}px;" class="border-r border-gray-800 py-2.5 px-2 text-center flex flex-col justify-center items-center">
+                        <span class="text-xs sm:text-sm font-bold text-blue-400 tracking-wide">${dg.dayName}, ${dg.date}</span>
                     </div>
                 `;
             });
@@ -1408,10 +1408,10 @@
                     const style = trackColors[catKey] || trackColors.DEFAULT;
                     
                     html += `
-                        <div style="width: ${w}px;" class="border-r border-gray-800/80 py-1.5 px-2 text-center text-xs font-semibold uppercase tracking-wider flex items-center justify-center">
-                            <a href="${tg.eventUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1.5 ${style.text} hover:text-white transition-colors">
-                                ${tg.trackName}
-                                <i data-lucide="external-link" class="w-3 h-3 opacity-70"></i>
+                        <div style="width: ${w}px;" class="border-r border-gray-800/80 py-1.5 px-1.5 text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider flex items-center justify-center">
+                            <a href="${tg.eventUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1 leading-tight ${style.text} hover:text-white transition-colors">
+                                <span class="break-words">${tg.trackName}</span>
+                                <i data-lucide="external-link" class="w-2.5 h-2.5 opacity-70 shrink-0"></i>
                             </a>
                         </div>
                     `;
@@ -1425,9 +1425,9 @@
             
             columns.forEach(col => {
                 html += `
-                    <div style="width: ${columnWidth}px;" class="border-r border-gray-800/80 bg-[#14141A] py-2 px-3 text-center text-xs font-medium text-gray-300 truncate flex items-center justify-center gap-1.5">
-                        <i data-lucide="map-pin" class="w-3 h-3 text-purple-400"></i>
-                        <span class="truncate" title="${col.venue}">${col.venue}</span>
+                    <div style="width: ${columnWidth}px;" class="border-r border-gray-800/80 bg-[#14141A] py-1.5 px-1.5 text-center text-[11px] font-medium text-gray-300 flex items-center justify-center gap-1">
+                        <i data-lucide="map-pin" class="w-2.5 h-2.5 text-purple-400 shrink-0"></i>
+                        <span class="break-words leading-tight" title="${col.venue}">${col.venue}</span>
                     </div>
                 `;
             });
@@ -1494,45 +1494,45 @@
                         const heightPixels = Math.max(durationHours * hourScaleHeight, 36);
 
                         html += `
-                            <div style="top: ${topPixels}px; height: ${heightPixels}px; left: 4px; right: 4px;" 
+                            <div style="top: ${topPixels}px; height: ${heightPixels}px; left: 3px; right: 3px;" 
                                  onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
-                                 class="absolute performance-card rounded-lg p-2 border ${style.bg} ${style.border} ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden group shadow-md transition-all ${isSearchMatched ? 'opacity-100 ring-1 ring-white/10' : 'opacity-25 grayscale'}">
+                                 class="absolute performance-card rounded-lg p-1.5 border ${style.bg} ${style.border} ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden group shadow-md transition-all ${isSearchMatched ? 'opacity-100 ring-1 ring-white/10' : 'opacity-25 grayscale'}">
                                 <div>
-                                    <div class="flex items-start justify-between gap-1">
-                                        <h4 class="font-bold text-xs text-white leading-tight truncate group-hover:text-blue-200" title="${perf.artist}">
+                                    <div class="flex items-start justify-between gap-0.5">
+                                        <h4 class="font-bold text-[11px] text-white leading-tight break-words whitespace-normal group-hover:text-blue-200" title="${perf.artist}">
                                             ${perf.artist}
                                         </h4>
-                                        <button onclick="toggleFavorite('${perf.id}', event)" class="p-0.5 -mt-1 -mr-1 rounded hover:bg-white/10 transition-colors" title="Toggle Favorite">
-                                            <i data-lucide="star" class="w-3.5 h-3.5 ${starIconClass}"></i>
+                                        <button onclick="toggleFavorite('${perf.id}', event)" class="p-0.5 -mt-0.5 -mr-0.5 rounded hover:bg-white/10 transition-colors shrink-0" title="Toggle Favorite">
+                                            <i data-lucide="star" class="w-3 h-3 ${starIconClass}"></i>
                                         </button>
                                     </div>
                                     <!-- Program Track has been removed from here -->
                                 </div>
-                                <div class="flex items-center justify-between text-[10px] text-gray-300 font-mono mt-1 pt-1 border-t border-white/10">
-                                    <span class="flex items-center gap-1 font-semibold">
-                                        <i data-lucide="clock" class="w-2.5 h-2.5 text-gray-400"></i>
+                                <div class="flex items-center justify-between text-[9px] text-gray-300 font-mono mt-0.5 pt-0.5 border-t border-white/10">
+                                    <span class="flex items-center gap-0.5 font-semibold">
+                                        <i data-lucide="clock" class="w-2 h-2 text-gray-400"></i>
                                         ${perf.start_time}
                                     </span>
-                                    <span class="text-[9px] text-gray-400">${perf.end_time}</span>
+                                    <span class="text-[8px] text-gray-400">${perf.end_time}</span>
                                 </div>
                             </div>
                         `;
                     } else {
                         // "Unknown" Time Performances fallback rendered at top banner in column[cite: 2]
                         const topPixels = unknownTimeOffset;
-                        unknownTimeOffset += 52;
+                        unknownTimeOffset += 56;
 
                         html += `
-                            <div style="top: ${topPixels}px; height: 46px; left: 4px; right: 4px;" 
+                            <div style="top: ${topPixels}px; height: 50px; left: 3px; right: 3px;" 
                                  onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
-                                 class="absolute performance-card rounded-lg p-2 border bg-gray-900/90 border-dashed border-gray-600 ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden shadow-md ${isSearchMatched ? 'opacity-100' : 'opacity-20'}">
-                                <div class="flex items-center justify-between">
-                                    <h4 class="font-semibold text-xs text-gray-200 truncate" title="${perf.artist}">${perf.artist}</h4>
-                                    <button onclick="toggleFavorite('${perf.id}', event)" class="p-0.5 rounded hover:bg-white/10 transition-colors" title="Toggle Favorite">
-                                        <i data-lucide="star" class="w-3.5 h-3.5 ${starIconClass}"></i>
+                                 class="absolute performance-card rounded-lg p-1.5 border bg-gray-900/90 border-dashed border-gray-600 ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden shadow-md ${isSearchMatched ? 'opacity-100' : 'opacity-20'}">
+                                <div class="flex items-start justify-between gap-0.5">
+                                    <h4 class="font-semibold text-[10px] text-gray-200 break-words whitespace-normal leading-tight" title="${perf.artist}">${perf.artist}</h4>
+                                    <button onclick="toggleFavorite('${perf.id}', event)" class="p-0.5 -mt-0.5 -mr-0.5 rounded hover:bg-white/10 transition-colors shrink-0" title="Toggle Favorite">
+                                        <i data-lucide="star" class="w-3 h-3 ${starIconClass}"></i>
                                     </button>
                                 </div>
-                                <div class="text-[10px] text-gray-400 truncate font-mono">Time: ${perf.start_time}</div>
+                                <div class="text-[9px] text-gray-400 font-mono">Time: ${perf.start_time}</div>
                             </div>
                         `;
                     }
