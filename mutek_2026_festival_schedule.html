@@ -56,14 +56,13 @@
         .sticky-time-axis {
             position: sticky;
             left: 0;
-            z-index: 40;
+            z-index: 25;
         }
 
         .sticky-corner {
             position: sticky;
-            top: 0;
             left: 0;
-            z-index: 50;
+            z-index: 40;
         }
 
         .performance-card {
@@ -1401,7 +1400,7 @@
 
             // Table Layout Header Structure[cite: 2]
             const columnWidth = 110; // width per venue column in pixels
-            const timeAxisWidth = 80; // width of y-axis time column[cite: 2]
+            const timeAxisWidth = 40; // width of y-axis time column
             const totalWidth = timeAxisWidth + (columns.length * columnWidth);
 
             html += `<div style="width: ${Math.max(totalWidth, 100)}px;" class="flex flex-col relative">`;
@@ -1411,7 +1410,7 @@
             
             // Layer 1: Date Bar[cite: 2]
             html += `<div class="flex border-b border-gray-800/60 bg-[#1A1A24]">`;
-            html += `<div class="sticky-corner bg-[#1A1A24] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 flex items-center justify-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Time</div>`;
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-corner bg-[#1A1A24] border-r border-gray-800 flex items-center justify-center p-0.5 text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Time</div>`;
             
             dateGroups.forEach(dg => {
                 const w = dg.span * columnWidth;
@@ -1426,7 +1425,7 @@
 
             // Layer 2: Track Bar (Linked to Event URL)[cite: 2]
             html += `<div class="flex border-b border-gray-800/60 bg-[#17171F]">`;
-            html += `<div class="sticky-corner bg-[#17171F] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer[cite: 2]
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-corner bg-[#17171F] border-r border-gray-800 z-40"></div>`; // spacer
             
             dateGroups.forEach(dg => {
                 const theme = dateThemesMap[dg.date];
@@ -1449,7 +1448,7 @@
 
             // Layer 3: Venue Bar[cite: 2]
             html += `<div class="flex">`;
-            html += `<div class="sticky-corner bg-[#14141A] w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] border-r border-gray-800 z-40"></div>`; // spacer[cite: 2]
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-corner bg-[#14141A] border-r border-gray-800 z-40"></div>`; // spacer
             
             columns.forEach(col => {
                 const theme = dateThemesMap[col.date];
@@ -1468,14 +1467,14 @@
             const gridHeight = totalHours * hourScaleHeight;
             html += `<div class="flex relative time-grid-bg" style="height: ${gridHeight}px;">`;
 
-            // Y-Axis Time Scale Column[cite: 2]
-            html += `<div class="sticky-time-axis bg-[#0D0D11]/95 border-r border-gray-800 w-[${timeAxisWidth}px] min-w-[${timeAxisWidth}px] flex flex-col relative select-none">`;
+            // Y-Axis Time Scale Column (Sticky Left)
+            html += `<div style="width: ${timeAxisWidth}px; min-width: ${timeAxisWidth}px;" class="sticky-time-axis bg-[#0D0D11] border-r border-gray-800 flex flex-col relative select-none shrink-0 shadow-lg">`;
             for (let hour = minHour; hour < maxHour; hour++) {
                 const topPos = (hour - minHour) * hourScaleHeight;
                 const displayHour = hour >= 24 ? hour - 24 : hour;
                 const formattedHour = `${String(displayHour).padStart(2, '0')}:00`;
                 html += `
-                    <div style="top: ${topPos}px; height: ${hourScaleHeight}px;" class="absolute w-full border-t border-gray-800/40 px-2 pt-1 text-[11px] font-mono text-gray-400 flex items-start justify-end pr-3">
+                    <div style="top: ${topPos}px; height: ${hourScaleHeight}px;" class="absolute w-full border-t border-gray-800/40 px-0.5 pt-1 text-[10px] font-mono text-gray-400 flex items-start justify-center">
                         ${formattedHour}
                     </div>
                 `;
