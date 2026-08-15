@@ -18,6 +18,13 @@
                         "date": "25 Aug",
                         "start_time": "19:15",
                         "end_time": "20:00"
+                    },
+                    {
+                        "artist": "Barker",
+                        "profile_url": "https://montreal.mutek.org/en/artists/barker",
+                        "date": "25 Aug",
+                        "start_time": "20:05",
+                        "end_time": "23:00"
                     }
                 ]
             }
@@ -63,6 +70,13 @@
                         "date": "26 Aug",
                         "start_time": "20:30",
                         "end_time": "21:20"
+                    },
+                    {
+                        "artist": "Zora Jones",
+                        "profile_url": "https://montreal.mutek.org/en/artists/zora-jones",
+                        "date": "26 Aug",
+                        "start_time": "21:25",
+                        "end_time": "00:00"
                     }
                 ]
             }
@@ -115,6 +129,13 @@
                         "end_time": "23:15"
                     },
                     {
+                        "artist": "fongkikid",
+                        "profile_url": "https://montreal.mutek.org/en/artists/fongkikid",
+                        "date": "26 Aug",
+                        "start_time": "22:30",
+                        "end_time": "23:15"
+                    },
+                    {
                         "artist": "Debit",
                         "profile_url": "https://montreal.mutek.org/en/artists/debit",
                         "date": "26 Aug",
@@ -149,36 +170,43 @@
                         "artist": "Abulzooz",
                         "profile_url": "https://montreal.mutek.org/en/artists/zaid-bustami",
                         "date": "27 Aug",
-                        "start_time": "Unknown",
-                        "end_time": "Unknown"
+                        "start_time": "17:00",
+                        "end_time": "17:30"
                     },
                     {
                         "artist": "wetdogg",
                         "profile_url": "https://montreal.mutek.org/en/artists/wetdogg",
                         "date": "27 Aug",
-                        "start_time": "Unknown",
-                        "end_time": "Unknown"
+                        "start_time": "17:35",
+                        "end_time": "18:15"
                     },
                     {
                         "artist": "Monsieurmadam",
                         "profile_url": "https://montreal.mutek.org/en/artists/monsieurmadam",
                         "date": "27 Aug",
-                        "start_time": "Unknown",
-                        "end_time": "Unknown"
+                        "start_time": "18:20",
+                        "end_time": "19:20"
                     },
                     {
                         "artist": "WAWA",
                         "profile_url": "https://montreal.mutek.org/en/artists/wawa",
                         "date": "27 Aug",
-                        "start_time": "Unknown",
-                        "end_time": "Unknown"
+                        "start_time": "19:25",
+                        "end_time": "20:10"
                     },
                     {
                         "artist": "Istanbul Ghetto Club",
                         "profile_url": "https://montreal.mutek.org/en/artists/istanbul-ghetto-club",
                         "date": "27 Aug",
-                        "start_time": "Unknown",
-                        "end_time": "Unknown"
+                        "start_time": "20:20",
+                        "end_time": "21:15"
+                    },
+                    {
+                        "artist": "Polygonia",
+                        "profile_url": "https://montreal.mutek.org/en/artists/polygonia",
+                        "date": "27 Aug",
+                        "start_time": "21:20",
+                        "end_time": "00:00"
                     }
                 ]
             }
@@ -312,6 +340,13 @@
                         "date": "28 Aug",
                         "start_time": "21:10",
                         "end_time": "22:10"
+                    },
+                    {
+                        "artist": "Matthew Herbert",
+                        "profile_url": "https://montreal.mutek.org/en/artists/matthew-herbert",
+                        "date": "28 Aug",
+                        "start_time": "22:15",
+                        "end_time": "00:00"
                     }
                 ]
             }
@@ -528,6 +563,13 @@
                         "date": "29 Aug",
                         "start_time": "20:25",
                         "end_time": "21:55"
+                    },
+                    {
+                        "artist": "JakoJako",
+                        "profile_url": "https://montreal.mutek.org/en/artists/jakojako",
+                        "date": "29 Aug",
+                        "start_time": "22:00",
+                        "end_time": "00:00"
                     }
                 ]
             }
@@ -730,6 +772,13 @@
                         "date": "30 Aug",
                         "start_time": "20:35",
                         "end_time": "21:20"
+                    },
+                    {
+                        "artist": "A Guy Called Gerald",
+                        "profile_url": "https://montreal.mutek.org/en/artists/a-guy-called-gerald",
+                        "date": "30 Aug",
+                        "start_time": "21:25",
+                        "end_time": "00:00"
                     }
                 ]
             }
