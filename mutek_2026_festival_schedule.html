@@ -156,7 +156,7 @@
     <!-- Track/Series Legend & Quick Stats -->
     <section class="bg-[#14141A] border-b border-gray-800/80 px-4 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div class="flex items-center gap-2 overflow-x-auto py-0.5" id="trackLegend">
-            <!-- Legend Button Items generated dynamically -->
+            <!-- Multi-Select Track Toggle Buttons dynamically inserted -->
         </div>
         <div class="flex items-center gap-4 text-gray-400 text-xs">
             <div class="flex items-center gap-1.5">
@@ -1114,6 +1114,8 @@
             'DEFAULT': { bg: 'bg-gray-800/80', border: 'border-gray-600/50', text: 'text-gray-300', accent: '#6B7280' }
         };
 
+        const allTrackKeys = ['PLAY', 'EXPÉRIENCE', 'X/VISIONS', 'NOCTURNE', 'MÉTROPOLIS'];
+
         // Standardized Track Ordering Rank: PLAY (when present) -> EXPÉRIENCE -> X/VISIONS (when present) -> NOCTURNE -> MÉTROPOLIS
         const trackOrderRank = {
             'PLAY': 1,
@@ -1201,7 +1203,7 @@
         // App State[cite: 2]
         let favoritesSet = loadFavorites();
         let showFavoritesOnly = false;
-        let activeTrackFilter = 'ALL';
+        let activeTracksSet = new Set(allTrackKeys); // Tracks enabled as multi-toggle
         let currentSearch = '';
         let activeDateFilter = 'ALL';
         let hourScaleHeight = 70; // pixels per hour
@@ -1259,7 +1261,25 @@
                 const url = event.event_url;
                 const schedule = event.structured_schedule;
 
-                Object.keys(schedule).forEach(venueName => {
+                const trackInfoKeys = Object.keys(schedule);
+                const venueOrderingRank = {
+                    'Esplanade Tranquille': 1,
+                    'Studio-Théâtre des Grands Ballets': 2,
+                    'Maison symphonique': 3,
+                    'Espace SAT': 4,
+                    'Satosphère': 5,
+                    'MTELUS': 6
+                };
+
+                trackInfoKeys.sort((a, b) => {
+                    const cleanA = (a.trim() === 'Satoshpère') ? 'Satosphère' : a.trim();
+                    const cleanB = (b.trim() === 'Satoshpère') ? 'Satosphère' : b.trim();
+                    const rA = venueOrderingRank[cleanA] ?? 99;
+                    const rB = venueOrderingRank[cleanB] ?? 99;
+                    return rA - rB;
+                });
+
+                trackInfoKeys.forEach(venueName => {
                     // Standardize Venue Names (Fix spelling errors like Satoshpère)[cite: 2]
                     let cleanVenue = venueName.trim();
                     if (cleanVenue === 'Satoshpère') cleanVenue = 'Satosphère';
@@ -1343,7 +1363,6 @@
                 ? dateOrder 
                 : dateOrder.filter(d => d === activeDateFilter);
 
-            // Compute total venues / columns and build hierarchical groups[cite: 2]
             let columns = [];
             let dateGroups = [];
             
@@ -1362,6 +1381,12 @@
                     // Group by trackName to merge track headers[cite: 2]
                     let tracksMap = new Map();
                     for (const [vKey, vData] of venuesMap.entries()) {
+                        const catKey = getTrackCategory(vData.trackName);
+                        // Filter out tracks that are toggled off
+                        if (!activeTracksSet.has(catKey)) {
+                            continue;
+                        }
+
                         if (!tracksMap.has(vData.trackName)) {
                             tracksMap.set(vData.trackName, {
                                 trackName: vData.trackName,
@@ -1370,6 +1395,10 @@
                             });
                         }
                         tracksMap.get(vData.trackName).venues.push(vData);
+                    }
+
+                    if (tracksMap.size === 0) {
+                        return;
                     }
 
                     let dateColCount = 0;
@@ -1392,10 +1421,19 @@
                             span: trackColCount
                         });
 
-                        // Sort venues consistently[cite: 2]
+                        const venueOrderingRank = {
+                            'Esplanade Tranquille': 1,
+                            'Studio-Théâtre des Grands Ballets': 2,
+                            'Maison symphonique': 3,
+                            'Espace SAT': 4,
+                            'Satosphère': 5,
+                            'MTELUS': 6
+                        };
+
                         tGroup.venues.sort((a, b) => {
-                            if (a.venue === 'Main Venue') return -1;
-                            if (b.venue === 'Main Venue') return 1;
+                            const rA = venueOrderingRank[a.venue] ?? 99;
+                            const rB = venueOrderingRank[b.venue] ?? 99;
+                            if (rA !== rB) return rA - rB;
                             return a.venue.localeCompare(b.venue);
                         }).forEach((v, vIndex) => {
                             columns.push({
@@ -1426,6 +1464,18 @@
 
             // Start Building HTML[cite: 2]
             let html = ``;
+
+            if (columns.length === 0) {
+                gridContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-12 text-center text-gray-400">
+                        <i data-lucide="eye-off" class="w-8 h-8 mb-2 opacity-50"></i>
+                        <p class="text-sm font-semibold">No tracks selected.</p>
+                        <p class="text-xs text-gray-500 mt-1">Toggle track buttons above to display festival programs.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
 
             // Table Layout Header Structure[cite: 2]
             const columnWidth = 110; // width per venue column in pixels
@@ -1530,7 +1580,6 @@
                     const isFav = favoritesSet.has(perf.id);
 
                     const catKey = getTrackCategory(perf.track);
-                    const isTrackMatched = activeTrackFilter === 'ALL' || catKey === activeTrackFilter;
 
                     // Filter search matching[cite: 2]
                     const isSearchMatched = currentSearch.trim() === '' || 
@@ -1541,7 +1590,7 @@
                         return;
                     }
 
-                    const isDimmed = !isTrackMatched || !isSearchMatched;
+                    const isDimmed = !isSearchMatched;
                     const style = trackColors[catKey] || trackColors.DEFAULT;
                     const favoriteClass = isFav ? 'is-favorite' : '';
                     const starIconClass = isFav ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-300';
@@ -1644,13 +1693,27 @@
             renderSchedule();
         }
 
-        function setTrackFilter(trackKey) {
-            activeTrackFilter = (activeTrackFilter === trackKey) ? 'ALL' : trackKey;
+        function toggleAllTracks() {
+            if (activeTracksSet.size === allTrackKeys.length) {
+                activeTracksSet.clear();
+            } else {
+                activeTracksSet = new Set(allTrackKeys);
+            }
             renderTrackLegend();
             renderSchedule();
         }
 
-        // Render Track Legend as Active Clickable Toggle Buttons
+        function toggleTrackFilter(trackKey) {
+            if (activeTracksSet.has(trackKey)) {
+                activeTracksSet.delete(trackKey);
+            } else {
+                activeTracksSet.add(trackKey);
+            }
+            renderTrackLegend();
+            renderSchedule();
+        }
+
+        // Render Track Legend as Multi-Select Toggle Buttons
         function renderTrackLegend() {
             const legendContainer = document.getElementById('trackLegend');
             const tracks = [
@@ -1661,29 +1724,31 @@
                 { name: 'MÉTROPOLIS', key: 'MÉTROPOLIS' }
             ];
 
+            const allActive = activeTracksSet.size === allTrackKeys.length;
+
             let html = `
-                <button onclick="setTrackFilter('ALL')" 
+                <button onclick="toggleAllTracks()" 
                     class="px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                        activeTrackFilter === 'ALL'
-                        ? 'bg-blue-600 text-white shadow-sm'
+                        allActive
+                        ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400/40'
                         : 'bg-[#1A1A24] text-gray-400 hover:text-gray-200 hover:bg-gray-800 border border-gray-800/80'
                     }">
-                    <span>All Tracks</span>
+                    <span>${allActive ? 'Hide All' : 'Show All'}</span>
                 </button>
             `;
 
             html += tracks.map(t => {
                 const conf = trackColors[t.key];
-                const isActive = activeTrackFilter === t.key;
+                const isEnabled = activeTracksSet.has(t.key);
                 return `
-                    <button onclick="setTrackFilter('${t.key}')" 
+                    <button onclick="toggleTrackFilter('${t.key}')" 
                         class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all border ${
-                            isActive
-                            ? 'bg-white/10 text-white border-white/40 ring-1 ring-white/30 shadow-md'
-                            : 'bg-[#1A1A24] text-gray-300 hover:text-white hover:bg-gray-800/80 border-gray-800/80'
+                            isEnabled
+                            ? 'bg-white/15 text-white border-white/40 ring-1 ring-white/30 shadow-md'
+                            : 'bg-[#14141A] text-gray-500 opacity-50 hover:opacity-80 border-gray-800'
                         }">
-                        <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${conf.accent};"></span>
-                        <span>${t.name}</span>
+                        <span class="w-2 h-2 rounded-full shrink-0 ${isEnabled ? '' : 'grayscale'}" style="background-color: ${conf.accent};"></span>
+                        <span class="${isEnabled ? '' : 'line-through'}">${t.name}</span>
                     </button>
                 `;
             }).join('');
