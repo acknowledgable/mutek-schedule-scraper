@@ -1111,6 +1111,16 @@
             'DEFAULT': { bg: 'bg-gray-800/80', border: 'border-gray-600/50', text: 'text-gray-300', accent: '#6B7280' }
         };
 
+        // Standardized Track Ordering Rank: PLAY (when present) -> EXPÉRIENCE -> X/VISIONS (when present) -> NOCTURNE -> MÉTROPOLIS
+        const trackOrderRank = {
+            'PLAY': 1,
+            'EXPÉRIENCE': 2,
+            'X/VISIONS': 3,
+            'NOCTURNE': 4,
+            'MÉTROPOLIS': 5,
+            'DEFAULT': 99
+        };
+
         const dayNames = {
             "25 Aug": "Tuesday",
             "26 Aug": "Wednesday",
@@ -1294,11 +1304,11 @@
         function getTrackCategory(trackName) {
             if (!trackName) return 'DEFAULT';
             const upper = trackName.toUpperCase();
-            if (upper.includes('EXPÉRIENCE')) return 'EXPÉRIENCE';
-            if (upper.includes('NOCTURNE')) return 'NOCTURNE';
-            if (upper.includes('X/VISIONS')) return 'X/VISIONS';
-            if (upper.includes('MÉTROPOLIS')) return 'MÉTROPOLIS';
             if (upper.includes('PLAY')) return 'PLAY';
+            if (upper.includes('EXPÉRIENCE')) return 'EXPÉRIENCE';
+            if (upper.includes('X/VISIONS')) return 'X/VISIONS';
+            if (upper.includes('NOCTURNE')) return 'NOCTURNE';
+            if (upper.includes('MÉTROPOLIS')) return 'MÉTROPOLIS';
             return 'DEFAULT';
         }
 
@@ -1361,8 +1371,15 @@
                     let dateColCount = 0;
                     let trackGroups = [];
 
-                    // Sort tracks alphabetically and assign columns[cite: 2]
-                    Array.from(tracksMap.values()).sort((a,b) => a.trackName.localeCompare(b.trackName)).forEach(tGroup => {
+                    // Sort tracks consistently: PLAY -> EXPÉRIENCE -> X/VISIONS -> NOCTURNE -> MÉTROPOLIS
+                    Array.from(tracksMap.values()).sort((a, b) => {
+                        const catA = getTrackCategory(a.trackName);
+                        const catB = getTrackCategory(b.trackName);
+                        const rankA = trackOrderRank[catA] ?? 99;
+                        const rankB = trackOrderRank[catB] ?? 99;
+                        if (rankA !== rankB) return rankA - rankB;
+                        return a.trackName.localeCompare(b.trackName);
+                    }).forEach(tGroup => {
                         let trackColCount = tGroup.venues.length;
                         dateColCount += trackColCount;
                         trackGroups.push({
@@ -1616,11 +1633,11 @@
         function renderTrackLegend() {
             const legendContainer = document.getElementById('trackLegend');
             const tracks = [
+                { name: 'PLAY', key: 'PLAY' },
                 { name: 'EXPÉRIENCE', key: 'EXPÉRIENCE' },
-                { name: 'NOCTURNE', key: 'NOCTURNE' },
                 { name: 'X/VISIONS', key: 'X/VISIONS' },
-                { name: 'MÉTROPOLIS', key: 'MÉTROPOLIS' },
-                { name: 'PLAY', key: 'PLAY' }
+                { name: 'NOCTURNE', key: 'NOCTURNE' },
+                { name: 'MÉTROPOLIS', key: 'MÉTROPOLIS' }
             ];
 
             const html = tracks.map(t => {
