@@ -156,8 +156,7 @@
     <!-- Track/Series Legend & Quick Stats -->
     <section class="bg-[#14141A] border-b border-gray-800/80 px-4 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div class="flex items-center gap-2 overflow-x-auto py-0.5" id="trackLegend">
-            <span class="text-gray-400 font-medium uppercase tracking-wider text-[10px] mr-1">Tracks:</span>
-            <!-- Legend Items generated dynamically -->
+            <!-- Legend Button Items generated dynamically -->
         </div>
         <div class="flex items-center gap-4 text-gray-400 text-xs">
             <div class="flex items-center gap-1.5">
@@ -1202,6 +1201,7 @@
         // App State[cite: 2]
         let favoritesSet = loadFavorites();
         let showFavoritesOnly = false;
+        let activeTrackFilter = 'ALL';
         let currentSearch = '';
         let activeDateFilter = 'ALL';
         let hourScaleHeight = 70; // pixels per hour
@@ -1529,6 +1529,9 @@
                     const endVal = parseTimeToHours(perf.end_time, perf.date);
                     const isFav = favoritesSet.has(perf.id);
 
+                    const catKey = getTrackCategory(perf.track);
+                    const isTrackMatched = activeTrackFilter === 'ALL' || catKey === activeTrackFilter;
+
                     // Filter search matching[cite: 2]
                     const isSearchMatched = currentSearch.trim() === '' || 
                         perf.artist.toLowerCase().includes(currentSearch.toLowerCase()) || 
@@ -1538,7 +1541,7 @@
                         return;
                     }
 
-                    const catKey = getTrackCategory(perf.track);
+                    const isDimmed = !isTrackMatched || !isSearchMatched;
                     const style = trackColors[catKey] || trackColors.DEFAULT;
                     const favoriteClass = isFav ? 'is-favorite' : '';
                     const starIconClass = isFav ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-300';
@@ -1554,7 +1557,7 @@
                         html += `
                             <div style="top: ${topPixels}px; height: ${heightPixels}px; left: 3px; right: 3px;" 
                                  onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
-                                 class="absolute performance-card rounded-lg p-1.5 border ${style.bg} ${style.border} ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden group shadow-md transition-all ${isSearchMatched ? 'opacity-100 ring-1 ring-white/10' : 'opacity-25 grayscale'}">
+                                 class="absolute performance-card rounded-lg p-1.5 border ${style.bg} ${style.border} ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden group shadow-md transition-all ${!isDimmed ? 'opacity-100 ring-1 ring-white/10' : 'opacity-20 grayscale'}">
                                 <div>
                                     <div class="flex items-start justify-between gap-0.5">
                                         <h4 class="font-bold text-[11px] text-white leading-tight break-words whitespace-normal group-hover:text-blue-200" title="${perf.artist}">
@@ -1591,7 +1594,7 @@
                         html += `
                             <div style="top: ${topPixels}px; height: 50px; left: 3px; right: 3px;" 
                                  onclick='openModal(${JSON.stringify(perf).replace(/'/g, "&apos;")})'
-                                 class="absolute performance-card rounded-lg p-1.5 border bg-gray-900/90 border-dashed border-gray-600 ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden shadow-md ${isSearchMatched ? 'opacity-100' : 'opacity-20'}">
+                                 class="absolute performance-card rounded-lg p-1.5 border bg-gray-900/90 border-dashed border-gray-600 ${favoriteClass} cursor-pointer flex flex-col justify-between overflow-hidden shadow-md ${!isDimmed ? 'opacity-100' : 'opacity-20'}">
                                 <div class="flex items-start justify-between gap-0.5">
                                     <h4 class="font-semibold text-[10px] text-gray-200 break-words whitespace-normal leading-tight" title="${perf.artist}">${perf.artist}</h4>
                                     <button onclick="toggleFavorite('${perf.id}', event)" class="p-0.5 -mt-0.5 -mr-0.5 rounded hover:bg-white/10 transition-colors shrink-0" title="Toggle Favorite">
@@ -1641,7 +1644,13 @@
             renderSchedule();
         }
 
-        // Render Track Legend[cite: 2]
+        function setTrackFilter(trackKey) {
+            activeTrackFilter = (activeTrackFilter === trackKey) ? 'ALL' : trackKey;
+            renderTrackLegend();
+            renderSchedule();
+        }
+
+        // Render Track Legend as Active Clickable Toggle Buttons
         function renderTrackLegend() {
             const legendContainer = document.getElementById('trackLegend');
             const tracks = [
@@ -1652,17 +1661,34 @@
                 { name: 'MÉTROPOLIS', key: 'MÉTROPOLIS' }
             ];
 
-            const html = tracks.map(t => {
+            let html = `
+                <button onclick="setTrackFilter('ALL')" 
+                    class="px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                        activeTrackFilter === 'ALL'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-[#1A1A24] text-gray-400 hover:text-gray-200 hover:bg-gray-800 border border-gray-800/80'
+                    }">
+                    <span>All Tracks</span>
+                </button>
+            `;
+
+            html += tracks.map(t => {
                 const conf = trackColors[t.key];
+                const isActive = activeTrackFilter === t.key;
                 return `
-                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#1A1A24] border border-gray-800/80 text-[11px]">
-                        <span class="w-2 h-2 rounded-full" style="background-color: ${conf.accent};"></span>
-                        <span class="text-gray-300 font-medium">${t.name}</span>
-                    </div>
+                    <button onclick="setTrackFilter('${t.key}')" 
+                        class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all border ${
+                            isActive
+                            ? 'bg-white/10 text-white border-white/40 ring-1 ring-white/30 shadow-md'
+                            : 'bg-[#1A1A24] text-gray-300 hover:text-white hover:bg-gray-800/80 border-gray-800/80'
+                        }">
+                        <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${conf.accent};"></span>
+                        <span>${t.name}</span>
+                    </button>
                 `;
             }).join('');
 
-            legendContainer.innerHTML += html;
+            legendContainer.innerHTML = html;
         }
 
         function updateModalFavBtn(isFav) {
